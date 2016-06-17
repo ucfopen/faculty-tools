@@ -1,3 +1,4 @@
+
 # config/settings
 
 faculty_resources/config.py
@@ -8,3 +9,5 @@ faculty_resources/config.py
 
 # virtual environment
 venv/
+env/
+*.pyc
