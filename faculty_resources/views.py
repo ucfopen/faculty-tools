@@ -9,7 +9,7 @@ from functools import wraps
 
 app = Flask(__name__)
 app.config.from_object(__name__)
-
+from config import *
 
 # ============================================
 # Utility Functions
