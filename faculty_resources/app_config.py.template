@@ -1,2 +1,0 @@
-app.debug = True
-app.secret_key = ''

@@ -8,7 +8,6 @@ from time import time
 from functools import wraps
 
 app = Flask(__name__)
-app.config.from_object(__name__)
 from config import *
 
 # ============================================
@@ -141,4 +140,6 @@ def was_nonce_used_in_last_x_minutes(nonce, minutes):
 
 if __name__ == "__main__":
 	app.debug = True
+	app.secret_key = secret_key
+
 	app.run(host="localhost", port=8080)
