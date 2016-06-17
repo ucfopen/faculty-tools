@@ -1,0 +1,10 @@
+# config/settings
+
+faculty_resources/config.py
+
+# system
+*.pyc
+*.DS_Store
+
+# virtual environment
+venv/
