@@ -1,8 +1,11 @@
-server_ip = "162.243.3.12"
+server_ip = ""
 servername = 'http://' + server_ip + ':5000'
 
-COURSE_TEMPLATE = '751378'
+COURSE_TEMPLATE = '000000'
 
-ENDPOINT = servername + '/endpoint';
-API_URL = 'https://***REMOVED***/api/v1/'
+API_URL = ''
 API_KEY = ''
+
+oauth_creds = { 'key': 'secret' }
+app.debug = True
+app.secret_key = ''

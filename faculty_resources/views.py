@@ -9,9 +9,6 @@ from time import time
 from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = '\xc8K\x80\x00e}R\x92I\x1b\xec\x10"oP\xc5o~~\x83\xb6f\x9e4'
-app.debug = True
-oauth_creds = { 'key': 'secret'}
 
 
 # ============================================
