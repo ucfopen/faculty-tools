@@ -1,6 +1,5 @@
 from flask import Flask, render_template, session, request,\
 	make_response, redirect, url_for, Response, jsonify, session
-from config import *
 
 #OAuth specific
 from ims_lti_py import ToolProvider
@@ -9,6 +8,7 @@ from time import time
 from functools import wraps
 
 app = Flask(__name__)
+app.config.from_object(__name__)
 
 
 # ============================================
