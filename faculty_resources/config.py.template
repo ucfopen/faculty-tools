@@ -1,5 +1,5 @@
 server_ip = ""
-servername = 'http://' + server_ip + ':5000'
+servername = 'http://' + server_ip + ':8080'
 
 COURSE_TEMPLATE = '000000'
 
@@ -7,5 +7,5 @@ API_URL = ''
 API_KEY = ''
 
 oauth_creds = { 'key': 'secret' }
-app.debug = True
-app.secret_key = ''
+
+secret_key = ''
