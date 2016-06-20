@@ -5,9 +5,13 @@ from ims_lti_py import ToolProvider
 from time import time
 
 from functools import wraps
+import requests
+import json
 
 app = Flask(__name__)
 from config import *
+
+json_headers = {'Authorization': 'Bearer ' + API_KEY, 'Content-type': 'application/json'}
 
 
 # ============================================
@@ -23,33 +27,42 @@ def check_valid_user(f):
         Otherwise, return an error page with corresponding message.
         """
         canvas_user_id = session.get('canvas_user_id')
-
         if not session.get('lti_logged_in') or not canvas_user_id:
-            return render_template('index.html', msg="Login error")
-
+            return render_template(
+                'error.html',
+                message='Not allowed!'
+            )
         if not 'course_id' in kwargs.keys():
-            return render_template('index.html', msg="Course ID error")
-
+            return render_template(
+                'error.html',
+                message='No course_id provided.'
+            )
         course_id = int(kwargs.get('course_id'))
-        enrollments_url = "%scourses/%s/enrollments" % (API_URL, course_id)
-        payload = {
-            'user_id': canvas_user_id,
-            'type': [
-                'TeacherEnrollment', 'TaEnrollment', 'DesignerEnrollment',
-                'StudentEnrollment', 'ObserverEnrollment'
-            ]
-        }
 
-        user_enrollments_response = requests.get(
-            enrollments_url,
-            data=json.dumps(payload),
-            headers=json_headers
-        )
-        user_enrollments = user_enrollments_response.json()
-        if not user_enrollments or 'errors' in user_enrollments:
-            return render_template('index.html', msg="Error with enrollments request")
+        if not session['is_admin']:
+            enrollments_url = "%scourses/%s/enrollments" % (API_URL, course_id)
+
+            payload = {
+                'user_id': canvas_user_id,
+                'type': ['TeacherEnrollment', 'TaEnrollment', 'DesignerEnrollment']
+            }
+
+            user_enrollments_response = requests.get(
+                enrollments_url,
+                data=json.dumps(payload),
+                headers=json_headers
+            )
+            user_enrollments = user_enrollments_response.json()
+
+            if not user_enrollments or 'errors' in user_enrollments:
+                return render_template(
+                    'error.html',
+                    message='You are not enrolled in this course as a Teacher, TA, or Designer.'
+                )
+
         return f(*args, **kwargs)
     return decorated_function
+
 
 
 # ============================================
@@ -79,7 +92,6 @@ def index(course_id=None):
         "index.html",
         course=course_id,
         students=students,
-        google=GOOGLE,
         current_student=current_student
     )
 
@@ -159,7 +171,7 @@ def lti_tool():
     if tool_provider.is_outcome_service():
         return render_template('assessment.html', username=username)
     else:
-        return redirect(url_for('quiz', course_id=course_id))
+        return redirect(url_for('index', course_id=course_id))
 
 
 def was_nonce_used_in_last_x_minutes(nonce, minutes):
