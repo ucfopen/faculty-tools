@@ -3,16 +3,15 @@ from flask import Flask, render_template, session, request, redirect, url_for
 #OAuth specific
 from ims_lti_py import ToolProvider
 from time import time
-
+from pycanvas import Canvas
 from functools import wraps
 import requests
 import json
-
 app = Flask(__name__)
 from config import *
 
 json_headers = {'Authorization': 'Bearer ' + API_KEY, 'Content-type': 'application/json'}
-
+canvas = Canvas(API_URL, API_KEY)
 
 # ============================================
 # Utility Functions
@@ -26,39 +25,39 @@ def check_valid_user(f):
         If user is allowed, return the decorated function.
         Otherwise, return an error page with corresponding message.
         """
-        canvas_user_id = session.get('canvas_user_id')
-        if not session.get('lti_logged_in') or not canvas_user_id:
-            return render_template(
-                'error.html',
-                message='Not allowed!'
-            )
-        if not 'course_id' in kwargs.keys():
-            return render_template(
-                'error.html',
-                message='No course_id provided.'
-            )
-        course_id = int(kwargs.get('course_id'))
+        # canvas_user_id = session.get('canvas_user_id')
+        # if not session.get('lti_logged_in') or not canvas_user_id:
+        #     return render_template(
+        #         'error.html',
+        #         message='Not allowed!'
+        #     )
+        # if not 'course_id' in kwargs.keys():
+        #     return render_template(
+        #         'error.html',
+        #         message='No course_id provided.'
+        #     )
+        # course_id = int(kwargs.get('course_id'))
 
-        if not session['is_admin']:
-            enrollments_url = "%scourses/%s/enrollments" % (API_URL, course_id)
+        # if not session['is_admin']:
+        #     enrollments_url = "%scourses/%s/enrollments" % (API_URL, course_id)
 
-            payload = {
-                'user_id': canvas_user_id,
-                'type': ['TeacherEnrollment', 'TaEnrollment', 'DesignerEnrollment']
-            }
+        #     payload = {
+        #         'user_id': canvas_user_id,
+        #         'type': ['TeacherEnrollment', 'TaEnrollment', 'DesignerEnrollment']
+        #     }
 
-            user_enrollments_response = requests.get(
-                enrollments_url,
-                data=json.dumps(payload),
-                headers=json_headers
-            )
-            user_enrollments = user_enrollments_response.json()
+        #     user_enrollments_response = requests.get(
+        #         enrollments_url,
+        #         data=json.dumps(payload),
+        #         headers=json_headers
+        #     )
+        #     user_enrollments = user_enrollments_response.json()
 
-            if not user_enrollments or 'errors' in user_enrollments:
-                return render_template(
-                    'error.html',
-                    message='You are not enrolled in this course as a Teacher, TA, or Designer.'
-                )
+        #     if not user_enrollments or 'errors' in user_enrollments:
+        #         return render_template(
+        #             'error.html',
+        #             message='You are not enrolled in this course as a Teacher, TA, or Designer.'
+        #         )
 
         return f(*args, **kwargs)
     return decorated_function
@@ -74,25 +73,27 @@ def index(course_id=None):
     """
     Main entry point to web application, call all the things and send the data to the template
     """
-    if 'instructor' in session:
-        students = fetch_canvas('courses/%s/users?enrollment_type[]=student' % (course_id))
-        if 'student' in request.form:
-            session['canvas_user_id'] = request.form['student']
-        else:
-            if session['launch_params']['custom_canvas_user_id'] == session['canvas_user_id']:
-                session['canvas_user_id'] = students[0]['id']
-        try:
-            current_student = [s for s in students if s['id'] == int(session['canvas_user_id'])][0]
-        except:
-            current_student = {id: 0, name: ""}
-    else:
-        students = []
-        current_student = []
+    course = canvas.get_course(course_id)
+    ltis = course.get_external_tools()
+    lti_list = []
+    user = session.get('canvas_user_id')
+    print vars(session)
+    print session["roles"], "ROLLS"
+    json_data = open("whitelist.json", "r")
+    data = json.load(json_data)
+    print data
+    for lti in ltis:
+        # print lti
+        print vars(lti)
+        
+        print "visibility", lti.course_navigation['visibility']
+        # if "admin" in session["roles"]
+        lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url()})
+
     return render_template(
         "index.html",
-        course=course_id,
-        students=students,
-        current_student=current_student
+        ltis=lti_list,
+        course=course_id
     )
 
 
@@ -119,8 +120,9 @@ def lti_tool():
     """
     course_id = request.form.get('custom_canvas_course_id')
     canvas_user_id = request.form.get('custom_canvas_user_id')
-
     roles = request.form['ext_roles']
+    session["roles"] = roles
+
     if not "Administrator" in roles and not "Instructor" in roles:
         return render_template(
             'error.html',
@@ -166,7 +168,7 @@ def lti_tool():
     session['lti_logged_in'] = True
 
     session['launch_params'] = tool_provider.to_params()
-    username = tool_provider.username('Dude')
+    # username = tool_provider.username('Dude')
 
     if tool_provider.is_outcome_service():
         return render_template('assessment.html', username=username)

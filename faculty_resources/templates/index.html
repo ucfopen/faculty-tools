@@ -1,4 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
-{{ msg }}
+
+<h1>Faculty Resources</h1>
+<p>beep boop click beep boop click beep boop click beep boop click beep boop click beep boop click beep boop click 
+beep boop click beep boop click beep boop click beep boop click beep boop click beep boop click beep boop click 
+beep boop click beep boop click beep boop click beep boop click beep boop click beep boop click beep boop click beep</p>
+
+<p>
+{% for lti in ltis %}
+	<a class="btn btn-primary" role="button" href="{{lti.sessionless_launch_url}}">{{lti.name}}</a>
+{% endfor %}
+</p>
 {% endblock content %}
