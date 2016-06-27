@@ -25,39 +25,39 @@ def check_valid_user(f):
         If user is allowed, return the decorated function.
         Otherwise, return an error page with corresponding message.
         """
-        # canvas_user_id = session.get('canvas_user_id')
-        # if not session.get('lti_logged_in') or not canvas_user_id:
-        #     return render_template(
-        #         'error.html',
-        #         message='Not allowed!'
-        #     )
-        # if not 'course_id' in kwargs.keys():
-        #     return render_template(
-        #         'error.html',
-        #         message='No course_id provided.'
-        #     )
-        # course_id = int(kwargs.get('course_id'))
+        canvas_user_id = session.get('canvas_user_id')
+        if not session.get('lti_logged_in') or not canvas_user_id:
+            return render_template(
+                'error.html',
+                message='Not allowed!'
+            )
+        if not 'course_id' in kwargs.keys():
+            return render_template(
+                'error.html',
+                message='No course_id provided.'
+            )
+        course_id = int(kwargs.get('course_id'))
 
-        # if not session['is_admin']:
-        #     enrollments_url = "%scourses/%s/enrollments" % (API_URL, course_id)
+        if not session['is_admin']:
+            enrollments_url = "%scourses/%s/enrollments" % (API_URL, course_id)
 
-        #     payload = {
-        #         'user_id': canvas_user_id,
-        #         'type': ['TeacherEnrollment', 'TaEnrollment', 'DesignerEnrollment']
-        #     }
+            payload = {
+                'user_id': canvas_user_id,
+                'type': ['TeacherEnrollment', 'TaEnrollment', 'DesignerEnrollment']
+            }
 
-        #     user_enrollments_response = requests.get(
-        #         enrollments_url,
-        #         data=json.dumps(payload),
-        #         headers=json_headers
-        #     )
-        #     user_enrollments = user_enrollments_response.json()
+            user_enrollments_response = requests.get(
+                enrollments_url,
+                data=json.dumps(payload),
+                headers=json_headers
+            )
+            user_enrollments = user_enrollments_response.json()
 
-        #     if not user_enrollments or 'errors' in user_enrollments:
-        #         return render_template(
-        #             'error.html',
-        #             message='You are not enrolled in this course as a Teacher, TA, or Designer.'
-        #         )
+            if not user_enrollments or 'errors' in user_enrollments:
+                return render_template(
+                    'error.html',
+                    message='You are not enrolled in this course as a Teacher, TA, or Designer.'
+                )
 
         return f(*args, **kwargs)
     return decorated_function
@@ -68,27 +68,45 @@ def check_valid_user(f):
 # Web Views / Routes
 # ============================================
 @app.route("/<int:course_id>")
-@check_valid_user
+# @check_valid_user
 def index(course_id=None):
     """
     Main entry point to web application, call all the things and send the data to the template
     """
-    course = canvas.get_course(course_id)
-    ltis = course.get_external_tools()
+
+    ***REMOVED***
+
+    #set in settings
+    ucf_id = '***REMOVED***'
+    account = canvas.get_account(ucf_id)
+    ltis = account.get_external_tools()
+
     lti_list = []
     user = session.get('canvas_user_id')
-    print vars(session)
-    print session["roles"], "ROLLS"
-    json_data = open("whitelist.json", "r")
-    data = json.load(json_data)
-    print data
+    # print vars(session)
+    # print session["roles"], "ROLLS"
+    # json_data = open("whitelist.json", "r")
+    # data = json.load(json_data)
+    # print data
     for lti in ltis:
         # print lti
         print vars(lti)
         
-        print "visibility", lti.course_navigation['visibility']
+        # print "visibility", lti.course_navigation['visibility']
+
         # if "admin" in session["roles"]
-        lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url()})
+        #exclude self, faculty resources
+        if lti.name == "Faculty Resources":
+            continue
+        print "YUP"
+        print lti.id, lti.name
+        # print lti.get_sessionless_launch_url()
+        # lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url()})
+        lti_list.append({"name": lti.name, "id": lti.id})
+
+            # else:
+            #     print "NOPE", lti
+            #     pass
 
     return render_template(
         "index.html",
