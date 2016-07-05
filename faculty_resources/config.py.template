@@ -1,11 +1,10 @@
-server_ip = ""
-servername = 'http://' + server_ip + ':8080'
+server_ip = "127.0.0.1"
+servername = 'http://' + server_ip + ':5000'
 
-COURSE_TEMPLATE = '000000'
+UCF_ID = '00000'
 
 API_URL = ''
 API_KEY = ''
-
-oauth_creds = { 'key': 'secret' }
+oauth_creds = { 'key': 'secret'}
 
 secret_key = ''

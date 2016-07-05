@@ -4,6 +4,7 @@ from flask import Flask, render_template, session, request, redirect, url_for
 from ims_lti_py import ToolProvider
 from time import time
 from pycanvas import Canvas
+from pycanvas.exceptions import CanvasException
 from functools import wraps
 import requests
 import json
@@ -12,7 +13,7 @@ from config import *
 
 json_headers = {'Authorization': 'Bearer ' + API_KEY, 'Content-type': 'application/json'}
 canvas = Canvas(API_URL, API_KEY)
-
+print CanvasException
 # ============================================
 # Utility Functions
 # ============================================
@@ -74,39 +75,26 @@ def index(course_id=None):
     Main entry point to web application, call all the things and send the data to the template
     """
 
-    ***REMOVED***
-
-    #set in settings
-    ucf_id = '***REMOVED***'
-    account = canvas.get_account(ucf_id)
+    #Get data from the higher level account
+    account = canvas.get_account(UCF_ID)
     ltis = account.get_external_tools()
-
     lti_list = []
-    user = session.get('canvas_user_id')
-    # print vars(session)
-    # print session["roles"], "ROLLS"
-    # json_data = open("whitelist.json", "r")
-    # data = json.load(json_data)
-    # print data
-    for lti in ltis:
-        # print lti
-        print vars(lti)
-        
-        # print "visibility", lti.course_navigation['visibility']
 
-        # if "admin" in session["roles"]
-        #exclude self, faculty resources
+    user = session.get('canvas_user_id')
+
+    for lti in ltis:
         if lti.name == "Faculty Resources":
             continue
-        print "YUP"
-        print lti.id, lti.name
-        # print lti.get_sessionless_launch_url()
-        # lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url()})
-        lti_list.append({"name": lti.name, "id": lti.id})
+        try:
 
-            # else:
-            #     print "NOPE", lti
-            #     pass
+            # make sure it has a sessionless launch url
+            if isinstance(lti.get_sessionless_launch_url(), unicode):
+                lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url()})
+            else:
+                pass
+        except CanvasException:
+        # this lti threw an exception when talking to Canvas
+            pass
 
     return render_template(
         "index.html",
