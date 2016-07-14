@@ -13,7 +13,7 @@ from config import *
 
 json_headers = {'Authorization': 'Bearer ' + API_KEY, 'Content-type': 'application/json'}
 canvas = Canvas(API_URL, API_KEY)
-print CanvasException
+
 # ============================================
 # Utility Functions
 # ============================================
@@ -80,18 +80,22 @@ def index(course_id=None):
     ltis = account.get_external_tools()
     lti_list = []
 
+    #load our white list
+    json_data = json.loads(open('whitelist.json').read())
+
     user = session.get('canvas_user_id')
+    course = canvas.get_course('1199806')
+    test = course.get_external_tool('40560')
+    print vars(test)
 
     for lti in ltis:
         if lti.name == "Faculty Resources":
             continue
         try:
-
-            # make sure it has a sessionless launch url
-            if isinstance(lti.get_sessionless_launch_url(), unicode):
-                lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url()})
-            else:
-                pass
+            #check if the LTI is in the whitelist
+            for data in json_data:
+                if lti.name in data['name']:
+                    lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url()})
         except CanvasException:
         # this lti threw an exception when talking to Canvas
             pass
@@ -146,7 +150,6 @@ def lti_tool():
             tool_provider = ToolProvider(key, secret, request.form)
         else:
             tool_provider = ToolProvider(None, None, request.form)
-            print tool_provider
             tool_provider.lti_msg = 'Your consumer didn\'t use a recognized key'
             tool_provider.lti_errorlog = 'You did it wrong!'
             return render_template(
