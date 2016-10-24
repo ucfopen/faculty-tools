@@ -2,56 +2,75 @@
 <html lang="en-US">
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<script type=text/javascript>
-	  		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		<script type="text/javascript">
+	  		// $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 		</script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
 		<meta charset='utf-8'/>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
-		<title>Course Roster</title>
-		
-		<!--[if IE]>
-		<link href="http://***REMOVED***" rel="stylesheet" media="screen, projection">
-		<![endif]-->
-		<style>
-			.wrapper {
-				margin: .5em;
-			}
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
 
-			img { height: 150px;}
-
-			/* Smartphones ----------- */
-			@media only screen and (max-width: 760px) {
-			  #canary { display: block; }
-			}
-
-		</style>
-
+		<title>UCF Course Toolkit</title>
 	</head>
 
-<body class="default">
-<div class="wrapper">
-<!-- 	<div id="ReplaceDiv" style="display:none; width: auto;" class="center"><img src="{{ url_for('static', filename='ajax-loader.gif') }}" alt='Loading...' class="preload" /></div> -->
-	{% block content %} {% endblock %}
-	<footer class="footer">
-	University of Central Florida | Center for Distributed Learning | 2016
-	<script>new Date().getFullYear() != 2016 document.write("&ndash; " + new Date().getFullYear())</script>
-	</footer>
+<div id="banner">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-2 col-sm-2"></div>
+			<div class="col-md-4 col-sm-4">
+				<h1><img src="" alt="UCF Course Toolkit" /></h1>
+			</div>
+			<div class="col-md-2 col-sm-2"></div>
+			<div class="col-md-2 col-sm-2" id="intro-blurb">
+				<p>Want to make your online course amazing? Learn the toolkit &amp; more at IDL6543...</p>
+			</div>
+			<div class="col-md-2 col-sm-2"></div>
+		</div>
+	</div>
 </div>
-		
-<!-- <script type='text/javascript' src='{{ url_for('static', filename='script.js') }}'></script> -->
-<script type="text/javascript">
+<div class="intro">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-2 col-sm-2"></div>
+			<div class="col-md-8">
+				<p>UCF Course Toolkit is a colleciton of tools &amp; resources ot make the online teaching experience great for you and your students. Here are some options for what you can do with the toolkit:</p>
+			</div>
+			<div class="col-md-2 col-sm-2"></div>
+		</div>
+	</div>
+</div>
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', '']);
-  _gaq.push(['_trackPageview']);
+{% block content %} {% endblock %}
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
+<footer class="container-fluid">
 
-</script>
-</body>
-</html>
+	<div class="row">
+		<div class="col-md-2 col-sm-2"></div>
+		<div class="col-md-5 col-sm-5">
+			<p>Looking for more tools? Check out all of the external apps available</p>
+		</div>
+		<div class="col-md-1 col-sm-1">
+			<span>&arrow;</span>
+		</div>
+		<div class="col-md-2 col-sm-2">
+			<button>Visit External Apps</button>
+		</div>
+		<div class="col-md-2 col-sm-2"></div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-2 col-sm-2"></div>
+		<div class="col-md-3 col-sm-3">
+			<img src="" alt="Center for Distributed Learning" />
+		</div>
+		<div class="col-md-2 col-sm-2"></div>
+		<div class="col-md-3 col-sm-3">
+			<a href="">Learn more about this page</a>
+			<br />
+			<a href="">Interested in collborating or adding something here? Contact us!</a>
+		</div>
+		<div class="col-md-2 col-sm-2"></div>
+	</div>
+	
+</footer>

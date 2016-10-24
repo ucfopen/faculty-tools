@@ -1,0 +1,28 @@
+$dark-gray: #242424;
+// use one of these weights - https://www.fontsquirrel.com/fonts/montserrat - 300 or 400
+$light-gray: #f4f4f4;
+$med-gray: #686868;
+
+#banner {
+	background-color: $dark-gray;
+}
+
+.intro {
+	background-color: $light-gray;
+}
+
+#intro-blurb {
+	color: #FFF;
+	border: $med-gray;
+	// padding: 5px;
+	border-style: solid;
+	border-radius: 3px;
+}
+
+.intro-buttons li button {
+	background-color: #ff4536;
+	color: #FFF;
+	border: 0 none;
+	padding: 3px;
+	border-radius: 3px;
+}

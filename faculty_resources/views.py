@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, url_for
 
-#OAuth specific
+# OAuth specific
 from ims_lti_py import ToolProvider
 from time import time
 from pycanvas import Canvas
@@ -17,6 +17,8 @@ canvas = Canvas(API_URL, API_KEY)
 # ============================================
 # Utility Functions
 # ============================================
+
+
 def check_valid_user(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -85,23 +87,23 @@ def index(course_id=None):
 
     user = session.get('canvas_user_id')
     course = canvas.get_course('1199806')
-    test = course.get_external_tool('40560')
-    print vars(test)
 
     for lti in ltis:
+        # skip yourself
         if lti.name == "Faculty Resources":
             continue
         try:
             #check if the LTI is in the whitelist
             for data in json_data:
                 if lti.name in data['name']:
-                    lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url()})
+                    print data
+                    lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url(), "desc": data['desc'], "heading": data['subheading'], "screenshot": data['screenshot']})
         except CanvasException:
         # this lti threw an exception when talking to Canvas
             pass
 
     return render_template(
-        "index.html",
+        "mockup1.html",
         ltis=lti_list,
         course=course_id
     )
@@ -119,6 +121,15 @@ def xml():
     except:
         return render_template('index.html', msg="No XML file")
 
+
+
+@app.route("/mockup/", methods=['POST', 'GET'])
+def mockup():
+    """
+    Returns the lti.xml file for the app.
+    XML can be built at https://www.eduappcenter.com/
+    """
+    return render_template('mockup1.html')
 
 # ============================================
 # LTI Setup & Config

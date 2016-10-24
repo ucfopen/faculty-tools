@@ -1,0 +1,20 @@
+#banner {
+  background-color: #242424; }
+
+.intro {
+  background-color: #f4f4f4; }
+
+#intro-blurb {
+  color: #FFF;
+  border: #686868;
+  border-style: solid;
+  border-radius: 3px; }
+
+.intro-buttons li button {
+  background-color: #ff4536;
+  color: #FFF;
+  border: 0 none;
+  padding: 3px;
+  border-radius: 3px; }
+
+/*# sourceMappingURL=main.css.map */
