@@ -4,8 +4,8 @@
 }
 
 /*@font-face {
-  font-family: 'Avenir-Next';
-  src: {{ url_for('static', filename='Avenir-Next.ttc') }};
+font-family: 'Avenir-Next';
+src: {{ url_for('static', filename='Avenir-Next.ttc') }};
 }*/
 
 body {
@@ -13,7 +13,7 @@ body {
 }
 
 /*h1, h2 ,h3 , h4, h5 {
-  font-family: 'Avenir-Next';
+font-family: 'Avenir-Next';
 }*/
 
 /* Remove a bootstrap thign */
@@ -31,6 +31,15 @@ p {
   border-bottom: 2px solid #dbdbdb;
 }
 
+h1 {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+h1 span.gold {
+  color: #fec906;
+}
+
 #intro-blurb {
   color: #FFF;
   border: #686868;
@@ -38,6 +47,8 @@ p {
   border-width: 1px;
   border-radius: 5px; 
   font-size: 12px;
+  margin-bottom: 20px;
+
 }
 
 #intro-blurb p {
@@ -54,30 +65,87 @@ p {
   width: 230px;
 }
 
-  #toolkit-intro {
-    padding-top: 20px;
-    padding-bottom: 20px;
-  }
+#toolkit-intro {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
 
-  #button_set_left {
-    padding-right: 20px;
-    padding-left: 0px;
-    text-align: left;
-    width: inherit;
-  }
+#button_set_left {
+  padding-right: 20px;
+  padding-left: 0px;
+  text-align: left;
+  width: inherit;
+}
 
-  #button_set_right {
-    padding-left:0px;
-  }
+#button_set_right {
+  padding-left:0px;
+}
 
-  .text-center {
-    text-align: center;
-  }
+.text-center {
+  text-align: center;
+}
 
-  #showing_all_tools {
-    font-size: 22px;
-    margin-top: 30px;
-    margin-bottom: 10px;
-    color: #ff4536;
-  }
+.text-right {
+  text-align: right;
+}
+
+#showing_all_tools {
+  font-size: 22px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  color: #ff4536;
+  font-weight: bold;
+}
+
+.card-deck {
+  margin-bottom: 15px;
+}
+
+.card {
+  background: #fffdf8;
+  border: 3px solid #ffeeae;
+}
+
+.card-title {
+  background: #ffeeae;
+  color: #675e44;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 10px;
+}
+
+
+/* footer area */
+.external_apps {
+  font-weight: bold;
+  font-size: 19px;
+}
+
+#visit_external_apps {
+ background: white;
+ font-weight: bold;
+ border: 1px solid #b0b0b0;
+ padding: 9px;
+ border-radius: 5px;
+ font-size: 18px;
+ /* margin-left: 35px; */
+}
+
+#pre_footer {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+#footer {
+  background: #242424;
+  padding: 15px;
+  margin-left: 0px;
+  margin-right:0px;
+}
+
+#footer a {
+  color: #909090;
+  font-size: 14px;
+  text-decoration: underline;
+}
 /*# sourceMappingURL=main.css.map */

@@ -97,7 +97,7 @@ def index(course_id=None):
             for data in json_data:
                 if lti.name in data['name']:
                     print data
-                    lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url(), "desc": data['desc'], "heading": data['subheading'], "screenshot": data['screenshot']})
+                    lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url(), "desc": data['desc'], "heading": data['subheading'], "screenshot": data['screenshot'], "logo" : data['logo']})
         except CanvasException:
         # this lti threw an exception when talking to Canvas
             pass
