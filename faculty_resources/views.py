@@ -8,11 +8,12 @@ from pycanvas.exceptions import CanvasException
 from functools import wraps
 import requests
 import json
+import config
 app = Flask(__name__)
-from config import *
+# from config import *
 
-json_headers = {'Authorization': 'Bearer ' + API_KEY, 'Content-type': 'application/json'}
-canvas = Canvas(API_URL, API_KEY)
+json_headers = {'Authorization': 'Bearer ' + config.API_KEY, 'Content-type': 'application/json'}
+canvas = Canvas(config.API_URL, config.API_KEY)
 
 # ============================================
 # Utility Functions
@@ -34,7 +35,7 @@ def check_valid_user(f):
                 'error.html',
                 message='Not allowed!'
             )
-        if not 'course_id' in kwargs.keys():
+        if 'course_id' not in kwargs.keys():
             return render_template(
                 'error.html',
                 message='No course_id provided.'
@@ -42,7 +43,7 @@ def check_valid_user(f):
         course_id = int(kwargs.get('course_id'))
 
         if not session['is_admin']:
-            enrollments_url = "%scourses/%s/enrollments" % (API_URL, course_id)
+            enrollments_url = "%scourses/%s/enrollments" % (config.API_URL, course_id)
 
             payload = {
                 'user_id': canvas_user_id,
@@ -66,7 +67,6 @@ def check_valid_user(f):
     return decorated_function
 
 
-
 # ============================================
 # Web Views / Routes
 # ============================================
@@ -77,29 +77,38 @@ def index(course_id=None):
     Main entry point to web application, call all the things and send the data to the template
     """
 
-    #Get data from the higher level account
-    account = canvas.get_account(UCF_ID)
+    # Get data from the higher level account
+    account = canvas.get_account(config.UCF_ID)
     ltis = account.get_external_tools()
     lti_list = []
 
-    #load our white list
+    # load our white list
     json_data = json.loads(open('whitelist.json').read())
 
-    user = session.get('canvas_user_id')
-    course = canvas.get_course('1199806')
+    # user = session.get('canvas_user_id')
+    # course = canvas.get_course('1199806')
 
     for lti in ltis:
         # skip yourself
         if lti.name == "Faculty Resources":
             continue
         try:
-            #check if the LTI is in the whitelist
+            # check if the LTI is in the whitelist
             for data in json_data:
                 if lti.name in data['name']:
                     print data
-                    lti_list.append({"name": lti.name, "id": lti.id, "sessionless_launch_url": lti.get_sessionless_launch_url(), "desc": data['desc'], "heading": data['subheading'], "screenshot": data['screenshot'], "logo" : data['logo']})
+                    lti_list.append({
+                        "name": lti.name,
+                        "id": lti.id,
+                        "sessionless_launch_url": lti.get_sessionless_launch_url(),
+                        "desc": data['desc'],
+                        "heading": data['subheading'],
+                        "screenshot": data['screenshot'],
+                        "logo": data['logo']
+                    })
+
         except CanvasException:
-        # this lti threw an exception when talking to Canvas
+            # this lti threw an exception when talking to Canvas
             pass
 
     return render_template(
@@ -122,7 +131,6 @@ def xml():
         return render_template('index.html', msg="No XML file")
 
 
-
 @app.route("/mockup/", methods=['POST', 'GET'])
 def mockup():
     """
@@ -130,6 +138,7 @@ def mockup():
     XML can be built at https://www.eduappcenter.com/
     """
     return render_template('mockup1.html')
+
 
 # ============================================
 # LTI Setup & Config
@@ -144,7 +153,7 @@ def lti_tool():
     roles = request.form['ext_roles']
     session["roles"] = roles
 
-    if not "Administrator" in roles and not "Instructor" in roles:
+    if "Administrator" not in roles and "Instructor" not in roles:
         return render_template(
             'error.html',
             message='Must be an Administrator or Instructor',
@@ -155,7 +164,7 @@ def lti_tool():
 
     key = request.form.get('oauth_consumer_key')
     if key:
-        secret = oauth_creds.get(key)
+        secret = config.oauth_creds.get(key)
 
         if secret:
             tool_provider = ToolProvider(key, secret, request.form)
@@ -188,7 +197,7 @@ def lti_tool():
     session['lti_logged_in'] = True
 
     session['launch_params'] = tool_provider.to_params()
-    # username = tool_provider.username('Dude')
+    username = tool_provider.username('Dude')
 
     if tool_provider.is_outcome_service():
         return render_template('assessment.html', username=username)
@@ -202,5 +211,5 @@ def was_nonce_used_in_last_x_minutes(nonce, minutes):
 
 if __name__ == "__main__":
     app.debug = True
-    app.secret_key = secret_key
+    app.secret_key = config.secret_key
     app.run(host="127.0.0.1", port=8080)
