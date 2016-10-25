@@ -126,6 +126,25 @@ h1 span.gold {
   padding: 10px;
 }
 
+/* Create custom content */
+
+.white {
+  color: white;
+}
+
+#create_custom_content {
+  background: #ff4536;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 40px;
+}
+
+#back_all_tools {
+  background: #ff4536;
+  border: 1px solid #ff7e71;
+  border-radius: 5px;
+}
+
 
 /* footer area */
 .external_apps {
