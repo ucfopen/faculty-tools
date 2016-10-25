@@ -102,6 +102,13 @@ h1 span.gold {
   font-weight: bold;
 }
 
+.like_to {
+  font-size: 19px; 
+  font-weight: bold;
+  /* temp vertical centering fix */
+  padding-top: 30%;
+}
+
 .card-deck {
   margin-bottom: 15px;
 }
