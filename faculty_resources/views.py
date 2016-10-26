@@ -9,8 +9,8 @@ from functools import wraps
 import requests
 import json
 import config
+
 app = Flask(__name__)
-# from config import *
 
 json_headers = {'Authorization': 'Bearer ' + config.API_KEY, 'Content-type': 'application/json'}
 canvas = Canvas(config.API_URL, config.API_KEY)
