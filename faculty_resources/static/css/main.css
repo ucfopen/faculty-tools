@@ -116,6 +116,15 @@ h1 span.gold {
   padding: 10px;
 }
 
+.thumbnail {
+  float: left;
+  margin-right: 5px;
+}
+
+.button_margin {
+  margin-top: 10px;
+}
+
 /* Create custom content */
 
 .white {
