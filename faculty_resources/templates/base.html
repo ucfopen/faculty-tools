@@ -42,25 +42,26 @@
 	  {% block content %} {% endblock %}
 
 	  <div class="row" id="pre_footer">
-		<div class="col-md-7 col-sm-7 offset-md-2" style="padding-top: 10px;">
+		<div class="col-md-9 col-sm-9" style="padding-top: 10px;">
 			<p class="external_apps">Looking for more tools? Check out all of the external apps available <span>></span></p>
 		</div>
-		<div class="col-md-3 col-sm-3">
+		<div class="col-md-3 col-sm-3 text-right">
 			<button id="visit_external_apps">Visit External Apps</button>
 		</div>
 	  </div>
 	</div> <!-- extra div closes container -->
-	<div class="row" id="footer">
-		<div class="col-md-2 col-sm-2"></div>
-		<div class="col-md-3 col-sm-3">
-			<img src="{{ url_for('static', filename='img/***REMOVED***') }}" alt="Center for Distributed Learning" />
+	<footer id="footer">
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-3">
+				<img src="{{ url_for('static', filename='img/***REMOVED***') }}" alt="Center for Distributed Learning" />
+			</div>
+			<div class="col-sm-7 text-right offset-sm-2">
+				<a href="">Learn more about this page</a>
+				<br />
+				<a href="">Interested in collborating or adding something here? Contact us!</a>
+			</div>
 		</div>
-		<div class="col-md-2 col-sm-2"></div>
-		<div class="col-md-3 col-sm-3 text-right">
-			<a href="">Learn more about this page</a>
-			<br />
-			<a href="">Interested in collborating or adding something here? Contact us!</a>
-		</div>
-		<div class="col-md-2 col-sm-2"></div>
 	</div>
+	</footer>
 	
