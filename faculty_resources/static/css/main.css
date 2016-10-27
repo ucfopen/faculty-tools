@@ -42,18 +42,17 @@ h1 span.gold {
 }
 
 #intro-blurb {
+  margin-bottom: 20px;
+}
+
+#intro-blurb p {
+  padding: 5px;
   color: #FFF;
   border: #686868;
   border-style: solid;
   border-width: 1px;
   border-radius: 5px; 
   font-size: 12px;
-  margin-bottom: 20px;
-
-}
-
-#intro-blurb p {
-  margin: 5px;
 }
 
 #intro-blurb a {
@@ -61,30 +60,14 @@ h1 span.gold {
   text-decoration: underline;
 }
 
-.intro-buttons li button {
-  background-color: #ff4536;
-  color: #FFF;
-  border: 0 none;
-  padding: 3px;
-  border-radius: 3px; 
+.intro-buttons li a {
   margin-top: 10px;
-  width: 230px;
+  white-space: normal;
 }
 
 #toolkit-intro {
   padding-top: 20px;
   padding-bottom: 20px;
-}
-
-#button_set_left {
-  padding-right: 20px;
-  padding-left: 0px;
-  text-align: left;
-  width: inherit;
-}
-
-#button_set_right {
-  padding-left:0px;
 }
 
 .text-center {
@@ -99,7 +82,7 @@ h1 span.gold {
   display: inline;
 }
 
-#showing_all_tools {
+#all_tools {
   font-size: 22px;
   margin-top: 30px;
   margin-bottom: 10px;
@@ -122,6 +105,7 @@ h1 span.gold {
   background: #fffdf8;
   border: 3px solid #ffeeae;
   box-shadow: 0px 2px 1px rgba(220,220,220,1);
+  padding: 0;
 }
 
 .card-title {
