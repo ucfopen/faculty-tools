@@ -79,24 +79,27 @@ def index(course_id=None):
 
     # Get data from the higher level account
     account = canvas.get_account(config.UCF_ID)
-    ltis = account.get_external_tools()
+    global_ltis = account.get_external_tools()
+    course = canvas.get_course(course_id)
+    course_ltis = course.get_external_tools()
+    lti_requests = []
     lti_list = []
+
+    for lti in course_ltis:
+        lti_requests.append(lti)
+    for lti in global_ltis:
+        lti_requests.append(lti)
 
     # load our white list
     json_data = json.loads(open('whitelist.json').read())
 
     # user = session.get('canvas_user_id')
-    # course = canvas.get_course('1199806')
 
-    for lti in ltis:
-        # skip yourself
-        if lti.name == "Faculty Resources":
-            continue
+    for lti in lti_requests:
         try:
             # check if the LTI is in the whitelist
             for data in json_data:
                 if lti.name in data['name']:
-                    print data
                     lti_list.append({
                         "name": lti.name,
                         "id": lti.id,
