@@ -125,6 +125,10 @@ h1 span.gold {
   margin-top: 10px;
 }
 
+.button_margin a {
+  white-space: normal;
+}
+
 /* Create custom content */
 
 .white {
