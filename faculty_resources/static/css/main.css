@@ -1,20 +1,10 @@
 @font-face {
-  font-family: 'Avenir';
-  src: {{ url_for('static', filename='Avenir.ttc') }};
+  font-family: 'Lato';
 }
-
-/*@font-face {
-font-family: 'Avenir-Next';
-src: {{ url_for('static', filename='Avenir-Next.ttc') }};
-}*/
 
 body {
-  font-family: 'Avenir';
+  font-family: 'Lato';
 }
-
-/*h1, h2 ,h3 , h4, h5 {
-font-family: 'Avenir-Next';
-}*/
 
 /* Remove a bootstrap thign */
 p {
