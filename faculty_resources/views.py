@@ -20,6 +20,7 @@ canvas = Canvas(config.API_URL, config.API_KEY)
 # ============================================
 
 
+
 def check_valid_user(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -78,17 +79,19 @@ def check_valid_user(f):
 # ============================================
 # Web Views / Routes
 # ============================================
-@app.route("/<int:course_id>")
+@app.route("/")
 # @check_valid_user
-def index(course_id=None):
+def index():
     """
     Main entry point to web application, call all the things and send the data to the template
     """
 
     # Get data from the higher level account
-    account = canvas.get_account(config.UCF_ID)
+    # account = canvas.get_account(config.UCF_ID)
+    # for dev
+    account = canvas.get_account(1)
     global_ltis = account.get_external_tools()
-    course = canvas.get_course(course_id)
+    course = canvas.get_course(session['course_id'])
     course_ltis = course.get_external_tools()
     lti_requests = []
     lti_list = []
@@ -126,7 +129,7 @@ def index(course_id=None):
     return render_template(
         "mockup1.html",
         ltis=lti_list,
-        course=course_id
+        course=session['course_id']
     )
 
 
@@ -155,10 +158,11 @@ def mockup():
 
 
 @app.route('/oauthlogin', methods=['POST', 'GET'])
+# @check_valid_user
 def oauth_login():
     # print "oauthlogin session", session, "oauth login session"
     # print "oauthlogin request", request.args, "ouathlogin request"
-    print session.get('canvas_user_id')
+    # print session.get('canvas_user_id')
 
     code = request.args.get('code')
     payload = {
@@ -172,8 +176,8 @@ def oauth_login():
     if 'access_token' in r.json():
         config.API_KEY = r.json()['access_token']
         # go to index
-        # return redirect(url_for('index'))
-        return render_template("mockup1.html")
+        # return render_template("mockup1.html")
+        return redirect(url_for('index'))
     else:
         # authentication error
         msg = "Authentication error, please refresh and try again."
