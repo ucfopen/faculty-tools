@@ -31,6 +31,16 @@ h1 span.gold {
   color: #fec906;
 }
 
+.margin-10 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.margin-20 {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
 #intro-blurb {
   margin-bottom: 20px;
 }
@@ -108,7 +118,7 @@ h1 span.gold {
 
 .thumbnail {
   float: left;
-  margin-right: 5px;
+  margin-right: 8px;
 }
 
 .button_margin {
@@ -171,5 +181,10 @@ h1 span.gold {
   color: #909090;
   font-size: 14px;
   text-decoration: underline;
+}
+
+.error_msg {
+  margin-top: 30px;
+  min-height: 300px;
 }
 /*# sourceMappingURL=main.css.map */
