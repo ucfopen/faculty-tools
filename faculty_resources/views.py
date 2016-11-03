@@ -29,39 +29,47 @@ def check_valid_user(f):
         If user is allowed, return the decorated function.
         Otherwise, return an error page with corresponding message.
         """
-        canvas_user_id = session.get('canvas_user_id')
-        if not session.get('lti_logged_in') or not canvas_user_id:
+        canvas_user_id = request.form.get('custom_canvas_user_id')
+        if not request.form.get('custom_canvas_user_id') or not canvas_user_id:
             return render_template(
                 'error.html',
                 msg='Not allowed!'
             )
-        if 'course_id' not in kwargs.keys():
+
+        course_id = int(request.form.get('custom_canvas_course_id'))
+        if not request.form.get('custom_canvas_course_id') or not course_id:
             return render_template(
                 'error.html',
                 msg='No course_id provided.'
             )
-        course_id = int(kwargs.get('course_id'))
 
-        if not session['is_admin']:
-            enrollments_url = "%scourses/%s/enrollments" % (config.API_URL, course_id)
+        # make sure that they are enrolled in this course
+        course = canvas.get_course(course_id)
+        user_enrollments = course.get_enrollments()
+        enrolled = False
 
-            payload = {
-                'user_id': canvas_user_id,
-                'type': ['TeacherEnrollment', 'TaEnrollment', 'DesignerEnrollment']
-            }
+        for enrollment in user_enrollments:
+            if enrollment.user_id == int(canvas_user_id):
+                enrolled = True
 
-            user_enrollments_response = requests.get(
-                enrollments_url,
-                data=json.dumps(payload),
-                headers=json_headers
+        roles = request.form['roles']
+        if "Administrator" in roles:
+            session['admin'] = True
+            session['instructor'] = True
+        if "Instructor" in roles:
+            session['instructor'] = True
+
+        if 'instructor' not in session:
+            return render_template(
+                'error.html',
+                msg='You are not enrolled in this course as a Teacher, TA, or Designer.'
             )
-            user_enrollments = user_enrollments_response.json()
 
-            if not user_enrollments or 'errors' in user_enrollments:
-                return render_template(
-                    'error.html',
-                    msg='You are not enrolled in this course as a Teacher, TA, or Designer.'
-                )
+        if enrolled is False and 'admin' not in session:
+            return render_template(
+                'error.html',
+                msg='You are not enrolled in this course as a Teacher, TA, or Designer.'
+            )
 
         return f(*args, **kwargs)
     return decorated_function
@@ -145,9 +153,11 @@ def mockup():
 
 # OAuth login
 
+
 @app.route('/oauthlogin', methods=['POST', 'GET'])
-# @check_valid_user
 def oauth_login():
+    # print "oauthlogin session", session, "oauth login session"
+    # print "oauthlogin request", request.args, "ouathlogin request"
     print session.get('canvas_user_id')
 
     code = request.args.get('code')
@@ -161,16 +171,22 @@ def oauth_login():
     r = requests.post(config.BASE_URL+'login/oauth2/token', data=payload)
     if 'access_token' in r.json():
         config.API_KEY = r.json()['access_token']
-        print config.API_KEY
-        return redirect(url_for('index'))
+        # go to index
+        # return redirect(url_for('index'))
+        return render_template("mockup1.html")
     else:
         # authentication error
         msg = "Authentication error, please refresh and try again."
         return render_template("error.html", msg=msg)
 
 
-@app.route('/auth', methods=['POST'])
+@app.route('/auth', methods=['POST', 'GET'])
+@check_valid_user
 def auth():
+    session.clear()
+    session['course_id'] = request.form.get('custom_canvas_course_id')
+    session['canvas_user_id'] = request.form.get('custom_canvas_user_id')
+
     # if they aren't in our DB/their token is expired or invalid
     return redirect(config.BASE_URL+'login/oauth2/auth?client_id='+config.oauth2_id +
                     '&response_type=code&redirect_uri='+config.oauth2_uri)
