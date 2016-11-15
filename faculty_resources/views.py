@@ -1,8 +1,7 @@
-from flask import Flask, render_template, session, request, redirect, url_for
-
+from flask import Flask, render_template, session, request, redirect, url_for, g
+from datetime import datetime, timedelta
+import sqlite3
 # OAuth specific
-from ims_lti_py import ToolProvider
-from time import time
 from pycanvas import Canvas
 from pycanvas.exceptions import CanvasException
 from functools import wraps
@@ -12,8 +11,6 @@ import config
 
 app = Flask(__name__)
 
-json_headers = {'Authorization': 'Bearer ' + config.API_KEY, 'Content-type': 'application/json'}
-canvas = Canvas(config.API_URL, config.API_KEY)
 
 # ============================================
 # Utility Functions
@@ -31,10 +28,12 @@ def check_valid_user(f):
         """
 
         if request.form:
-            # kill old session, rebuild
-            session.clear()
+            session.permanent = True
+            # 1 hour long session
+            app.permanent_session_lifetime = timedelta(minutes=60)
             session['course_id'] = request.form.get('custom_canvas_course_id')
             session['canvas_user_id'] = request.form.get('custom_canvas_course_id')
+
             roles = request.form['roles']
             if "Administrator" in roles:
                 session['admin'] = True
@@ -68,10 +67,11 @@ def check_valid_user(f):
         if 'instructor' not in session:
             return render_template(
                 'error.html',
-                msg='You are not enrolled in this course as a Teacher, TA, or Designer.'
+                msg='You are not enrolled in this course as a Teacher or Designer.'
             )
 
         # make sure that they are enrolled in this course
+        canvas = Canvas(config.API_URL, config.API_KEY)
         user = canvas.get_user(session['canvas_user_id'])
         user_enrollments = user.get_enrollments()
         enrolled = False
@@ -83,16 +83,31 @@ def check_valid_user(f):
         if enrolled is False and 'admin' not in session:
             return render_template(
                 'error.html',
-                msg='You are not enrolled in this course as a Teacher, TA, or Designer.'
+                msg='You are not enrolled in this course as a Teacher or Designer.'
             )
 
         return f(*args, **kwargs)
     return decorated_function
 
 
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(config.DATABASE)
+    return db
+
+
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+
 # ============================================
 # Web Views / Routes
 # ============================================
+
+
 @app.route("/")
 @check_valid_user
 def index():
@@ -103,6 +118,7 @@ def index():
     # Get data from the higher level account
     # account = canvas.get_account(config.UCF_ID)
     # 1 for dev
+    canvas = Canvas(config.API_URL, session['api_key'])
     account = canvas.get_account(1)
     global_ltis = account.get_external_tools()
     course = canvas.get_course(session['course_id'])
@@ -152,7 +168,6 @@ def xml():
     Returns the lti.xml file for the app.
     XML can be built at https://www.eduappcenter.com/
     """
-    print request.url_root
     try:
         return render_template('test.xml', url=request.url_root)
     except:
@@ -183,14 +198,36 @@ def oauth_login():
         'code': code
     }
     r = requests.post(config.BASE_URL+'login/oauth2/token', data=payload)
+
     if 'access_token' in r.json():
-        config.API_KEY = r.json()['access_token']
-        # go to index
-        return redirect(url_for('index'))
-    else:
-        # authentication error
-        msg = "Authentication error, please refresh and try again."
-        return render_template("error.html", msg=msg)
+        session['api_key'] = r.json()['access_token']
+
+        if 'refresh_token' in r.json():
+            session['refresh_token'] = r.json()['refresh_token']
+
+        if 'expires_in' in r.json():
+            # expires in seconds
+            # add the seconds to current time for expiration time
+            current_time = datetime.now()
+            expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
+            session['expires_in'] = expires_in
+        try:
+            curs = get_db().cursor()
+            curs.execute("INSERT INTO main (user_id, refresh_key, expires_in) VALUES (?, ?, ?)",
+                         (session['canvas_user_id'],
+                          session['refresh_token'],
+                          session['expires_in']))
+            get_db().commit()
+            return redirect(url_for('index'))
+
+        except Exception as e:
+            # log error
+            print e, "Error from db"
+            msg = "Authentication error, please refresh and try again."
+            return render_template("error.html", msg=msg)
+
+    msg = "Authentication error, please refresh and try again."
+    return render_template("error.html", msg=msg)
 
 
 @app.route('/auth', methods=['POST', 'GET'])
@@ -198,17 +235,78 @@ def oauth_login():
 def auth():
 
     # if they aren't in our DB/their token is expired or invalid
-    return redirect(config.BASE_URL+'login/oauth2/auth?client_id='+config.oauth2_id +
-                    '&response_type=code&redirect_uri='+config.oauth2_uri)
+    curs = get_db().cursor()
+    try:
+        curs.execute("SELECT * FROM main WHERE user_id='%s'" % int(session['canvas_user_id']))
+        row = curs.fetchall()
+        # get or add
+        if row:
+            for info in row:
+                expiration_date = datetime.strptime(info[3], '%Y-%m-%d %H:%M:%S.%f')
+                refresh_token = info[2]
+            if datetime.now() > expiration_date or 'api_key' not in session:
+                # expired! Use the refresh token
+                payload = {
+                    'grant_type': 'refresh_token',
+                    'client_id': config.oauth2_id,
+                    'redirect_uri': config.oauth2_uri,
+                    'client_secret': config.oauth2_key,
+                    'refresh_token': refresh_token
+                }
+                r = requests.post(config.BASE_URL+'login/oauth2/token', data=payload)
+                if 'access_token' in r.json():
+                    session['api_key'] = r.json()['access_token']
+
+                    if 'refresh_token' in r.json():
+                        session['refresh_token'] = r.json()['refresh_token']
+
+                    if 'expires_in' in r.json():
+                        # expires in seconds
+                        # add the seconds to current time for expiration time
+                        current_time = datetime.now()
+                        expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
+                        session['expires_in'] = expires_in
+                    try:
+                        curs.execute("UPDATE main SET expires_in=? WHERE user_id=?",
+                                     (session['expires_in'], session['canvas_user_id']))
+                        get_db().commit()
+
+                    except Exception as e:
+                        # log error
+                        print "exception from udpating db"
+                        msg = "Authentication error, please refresh and try again."
+                        return render_template("error.html", msg=msg)
+
+                    return redirect(url_for('index'))
+            else:
+                # good to go!
+                # test the api key
+                auth_header = {'Authorization': 'Bearer ' + config.API_KEY}
+                r = requests.get(config.API_URL + 'users/%s/profile' %
+                                 (session['canvas_user_id']), headers=auth_header)
+                if r.json():
+                    return redirect(url_for('index'))
+                else:
+                    msg = "Authentication error, please refresh and try again."
+                    return render_template("error.html", msg=msg)
+        else:
+            # not in db, go go oauth!!
+            return redirect(config.BASE_URL+'login/oauth2/auth?client_id='+config.oauth2_id +
+                            '&response_type=code&redirect_uri='+config.oauth2_uri)
+    except Exception as e:
+        # log error
+        print e, "Error from db"
+        # they aren't in the db, so send em to the oauth stuff
+        return redirect(config.BASE_URL+'login/oauth2/auth?client_id='+config.oauth2_id +
+                        '&response_type=code&redirect_uri='+config.oauth2_uri)
+
+    msg = "Authentication error, please refresh and try again."
+    return render_template("error.html", msg=msg)
 
 
 # ============================================
 # LTI Setup & Config
 # ============================================
-
-# @app.route('/launch', methods=['POST'])
-# def lti_tool():
-#     return "hi"
 
 if __name__ == "__main__":
     app.debug = True
