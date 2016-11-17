@@ -32,7 +32,7 @@ def check_valid_user(f):
             # 1 hour long session
             app.permanent_session_lifetime = timedelta(minutes=60)
             session['course_id'] = request.form.get('custom_canvas_course_id')
-            session['canvas_user_id'] = request.form.get('custom_canvas_course_id')
+            session['canvas_user_id'] = request.form.get('custom_canvas_user_id')
 
             roles = request.form['roles']
             if "Administrator" in roles:
@@ -78,7 +78,8 @@ def check_valid_user(f):
 
         for enrollment in user_enrollments:
             if enrollment.course_id == int(session['course_id']):
-                enrolled = True
+                if enrollment.type == "TeacherEnrollment":
+                    enrolled = True
 
         if enrolled is False and 'admin' not in session:
             return render_template(
@@ -119,6 +120,7 @@ def index():
     # account = canvas.get_account(config.UCF_ID)
     # 1 for dev
     canvas = Canvas(config.API_URL, session['api_key'])
+    # account = canvas.get_account(config.UCF_ID)
     account = canvas.get_account(1)
     global_ltis = account.get_external_tools()
     course = canvas.get_course(session['course_id'])
