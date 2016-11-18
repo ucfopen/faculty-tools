@@ -4,7 +4,7 @@
 - Create a virtual environment. Install everything:
 
 ```
-pip -r install requirements.txt
+pip install -r requirements.txt
 ```
 
 - Keep whitelist.json in mind. What LTIs do you want the instructors and faculty to see?
