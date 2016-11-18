@@ -5,6 +5,7 @@ servername = 'http://' + server_ip + ':5000'
 UCF_ID = '00000'
 
 API_URL = ''
+BASE_URL = ''
 API_KEY = ''
 oauth_creds = { 'key': 'secret'}
 
@@ -17,3 +18,5 @@ secret_key = ''
 oauth2_id = ""
 oauth2_key = ""
 oauth2_uri = 'http://' + server_ip + ":" + str(port) + "/oauthlogin"
+
+DATABASE = ''
