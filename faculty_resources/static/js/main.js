@@ -5,7 +5,7 @@ $(document).ready(function() {
         e.preventDefault();
         var filter = $(this).attr("data-filter");
         $.each($("div.card"), function() {
-            if ($(this).attr("data-filter") !== filter) {
+            if ($(this).attr("data-filter").indexOf(filter) == -1) {
                     if(!$("div.card").is(":visible")) {
                         // empty set of cards, show empty msg
                         if ($("#no_ltis").length == 0) {
@@ -14,7 +14,7 @@ $(document).ready(function() {
                             $("#no_ltis").fadeIn();
                         }
                     }     
-            } else if ($(this).attr("data-filter") == filter) {
+            } else if ($(this).attr("data-filter").indexOf(filter) > -1) {
                 $("div.card").fadeOut();
                 var card = $(this);
                 if ($("#no_ltis").length > 0) {
