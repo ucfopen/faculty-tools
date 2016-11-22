@@ -74,6 +74,7 @@ def check_valid_user(f):
         canvas = Canvas(config.API_URL, config.API_KEY)
         user = canvas.get_user(session['canvas_user_id'])
         user_enrollments = user.get_enrollments()
+
         enrolled = False
 
         for enrollment in user_enrollments:
@@ -119,12 +120,23 @@ def index():
     # Get data from the higher level account
     # account = canvas.get_account(config.UCF_ID)
     # 1 for dev
+
+    # Test API key to see if they need to reauthenticate
+    auth_header = {'Authorization': 'Bearer ' + session['api_key']}
+    r = requests.get(config.API_URL+'accounts/%s/' % config.UCF_ID, headers=auth_header)
+
+    if 'WWW-Authenticate' in r.request.headers or r.status_code == 401:
+        # reroll oauth
+        return redirect(config.BASE_URL+'login/oauth2/auth?client_id='+config.oauth2_id +
+                        '&response_type=code&redirect_uri='+config.oauth2_uri)
+
     canvas = Canvas(config.API_URL, session['api_key'])
     # account = canvas.get_account(config.UCF_ID)
     account = canvas.get_account(1)
     global_ltis = account.get_external_tools()
     course = canvas.get_course(session['course_id'])
     course_ltis = course.get_external_tools()
+
     lti_requests = []
     lti_list = []
 
@@ -173,7 +185,7 @@ def xml():
     try:
         return render_template('test.xml', url=request.url_root)
     except:
-        return render_template('index.html', msg="No XML file")
+        return render_template('error.html', msg="No XML file")
 
 
 @app.route("/mockup/", methods=['POST', 'GET'])
@@ -200,6 +212,11 @@ def oauth_login():
         'code': code
     }
     r = requests.post(config.BASE_URL+'login/oauth2/token', data=payload)
+
+    if r.status_code == 500:
+        # Canceled oauth or server error
+        msg = "Authentication error, please refresh and try again."
+        return render_template("error.html", msg=msg)
 
     if 'access_token' in r.json():
         session['api_key'] = r.json()['access_token']
@@ -275,7 +292,7 @@ def auth():
 
                     except Exception as e:
                         # log error
-                        print "exception from udpating db"
+                        print "exception from updating db"
                         msg = "Authentication error, please refresh and try again."
                         return render_template("error.html", msg=msg)
 
@@ -283,14 +300,21 @@ def auth():
             else:
                 # good to go!
                 # test the api key
-                auth_header = {'Authorization': 'Bearer ' + config.API_KEY}
+                auth_header = {'Authorization': 'Bearer ' + session['api_key']}
                 r = requests.get(config.API_URL + 'users/%s/profile' %
                                  (session['canvas_user_id']), headers=auth_header)
-                if r.json():
+                # check for WWW-Authenticate
+                # https://canvas.instructure.com/doc/api/file.oauth.html
+                if 'WWW-Authenticate' not in r.request.headers or r.status_code == 401:
                     return redirect(url_for('index'))
                 else:
-                    msg = "Authentication error, please refresh and try again."
-                    return render_template("error.html", msg=msg)
+                    print "401, had to reauthenticate"
+                    return redirect(config.BASE_URL+'login/oauth2/auth?client_id=' +
+                                    config.oauth2_id + '&response_type=code&redirect_uri=' +
+                                    config.oauth2_uri)
+
+                msg = "Authentication error, please refresh and try again."
+                return render_template("error.html", msg=msg)
         else:
             # not in db, go go oauth!!
             return redirect(config.BASE_URL+'login/oauth2/auth?client_id='+config.oauth2_id +
