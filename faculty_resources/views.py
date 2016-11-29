@@ -1,7 +1,6 @@
-from flask import Flask, render_template, session, request, redirect, url_for, g
+from flask import Flask, render_template, session, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-import sqlite3
-# OAuth specific
 from pycanvas import Canvas
 from pycanvas.exceptions import CanvasException
 from functools import wraps
@@ -10,7 +9,29 @@ import json
 import config
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test2.db'
+# make the warning shut up until Flask-SQLAlchemy v3 comes out
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+db = SQLAlchemy(app)
 
+# ============================================
+# DB Model
+# ============================================
+
+
+class Users(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
+    refresh_key = db.Column(db.String)
+    expires_in = db.Column(db.String)
+
+    def __init__(self, user_id, refresh_key, expires_in):
+        self.user_id = user_id
+        self.refresh_key = refresh_key
+        self.expires_in = expires_in
+
+    def __repr__(self):
+        return '<User %r>' % self.user_id
 
 # ============================================
 # Utility Functions
@@ -90,20 +111,6 @@ def check_valid_user(f):
 
         return f(*args, **kwargs)
     return decorated_function
-
-
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(config.DATABASE)
-    return db
-
-
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
-
 
 # ============================================
 # Web Views / Routes
@@ -231,12 +238,12 @@ def oauth_login():
             expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
             session['expires_in'] = expires_in
         try:
-            curs = get_db().cursor()
-            curs.execute("INSERT INTO main (user_id, refresh_key, expires_in) VALUES (?, ?, ?)",
-                         (session['canvas_user_id'],
-                          session['refresh_token'],
-                          session['expires_in']))
-            get_db().commit()
+
+            # add to db
+            new_user = Users(session['canvas_user_id'], session['refresh_token'],
+                             session['expires_in'])
+            db.session.add(new_user)
+            db.session.commit()
             return redirect(url_for('index'))
 
         except Exception as e:
@@ -254,15 +261,13 @@ def oauth_login():
 def auth():
 
     # if they aren't in our DB/their token is expired or invalid
-    curs = get_db().cursor()
     try:
-        curs.execute("SELECT * FROM main WHERE user_id='%s'" % int(session['canvas_user_id']))
-        row = curs.fetchall()
+        user = Users.query.filter_by(user_id=session['canvas_user_id']).first()
         # get or add
-        if row:
-            for info in row:
-                expiration_date = datetime.strptime(info[3], '%Y-%m-%d %H:%M:%S.%f')
-                refresh_token = info[2]
+        if user is not None:
+
+            expiration_date = datetime.strptime(user.expires_in, '%Y-%m-%d %H:%M:%S.%f')
+            refresh_token = user.refresh_key
             if datetime.now() > expiration_date or 'api_key' not in session:
                 # expired! Use the refresh token
                 payload = {
@@ -286,10 +291,8 @@ def auth():
                         expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
                         session['expires_in'] = expires_in
                     try:
-                        curs.execute("UPDATE main SET expires_in=? WHERE user_id=?",
-                                     (session['expires_in'], session['canvas_user_id']))
-                        get_db().commit()
-
+                        user.expires_in = session['expires_in']
+                        session.commit()
                     except Exception as e:
                         # log error
                         print "exception from updating db"
@@ -305,13 +308,15 @@ def auth():
                                  (session['canvas_user_id']), headers=auth_header)
                 # check for WWW-Authenticate
                 # https://canvas.instructure.com/doc/api/file.oauth.html
-                if 'WWW-Authenticate' not in r.request.headers or r.status_code == 401:
+                if 'WWW-Authenticate' not in r.request.headers:
                     return redirect(url_for('index'))
                 else:
                     print "401, had to reauthenticate"
-                    return redirect(config.BASE_URL+'login/oauth2/auth?client_id=' +
-                                    config.oauth2_id + '&response_type=code&redirect_uri=' +
-                                    config.oauth2_uri)
+                    return redirect(
+                        config.BASE_URL+'login/oauth2/auth?client_id=' +
+                        config.oauth2_id + '&response_type=code&redirect_uri=' +
+                        config.oauth2_uri
+                    )
 
                 msg = "Authentication error, please refresh and try again."
                 return render_template("error.html", msg=msg)
