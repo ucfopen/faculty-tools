@@ -1,0 +1,23 @@
+server_ip = "127.0.0.1"
+port = 0000
+servername = 'http://' + server_ip + ':5000'
+
+UCF_ID = '00000'
+
+API_URL = ''
+BASE_URL = ''
+API_KEY = ''
+oauth_creds = { 'key': 'secret'}
+
+secret_key = ''
+
+# $oauth2_id: The Client_ID Instructure gives you
+# $oauth2_key: The Secret Instructure gives you
+# $oauth2_uri: The "Oauth2 Redirect URI" you provided instructure.
+
+oauth2_id = ""
+oauth2_key = ""
+oauth2_uri = 'http://' + server_ip + ":" + str(port) + "/oauthlogin"
+
+LOG_MAX_BYTES = 10000
+LOG_BACKUP_COUNT = 1

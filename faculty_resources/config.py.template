@@ -1,22 +1,25 @@
-server_ip = "127.0.0.1"
-port = 0000
-servername = 'http://' + server_ip + ':5000'
+class Config(object):
+    SQLALCHEMY_DATABASE_URI = ''
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-UCF_ID = '00000'
 
-API_URL = ''
-BASE_URL = ''
-API_KEY = ''
-oauth_creds = { 'key': 'secret'}
+class BaseConfig(object):
+    DEBUG = False
+    TESTING = False
+    SQLALCHEMY_DATABASE_URI = ''
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-secret_key = ''
 
-# $oauth2_id: The Client_ID Instructure gives you
-# $oauth2_key: The Secret Instructure gives you
-# $oauth2_uri: The "Oauth2 Redirect URI" you provided instructure.
+class DevelopmentConfig(BaseConfig):
+    DEBUG = True
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = ''
+    # make the warning shut up until Flask-SQLAlchemy v3 comes out
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-oauth2_id = ""
-oauth2_key = ""
-oauth2_uri = 'http://' + server_ip + ":" + str(port) + "/oauthlogin"
 
-DATABASE = ''
+class TestingConfig(BaseConfig):
+    DEBUG = False
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = ''
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
