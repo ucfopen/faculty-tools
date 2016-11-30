@@ -251,8 +251,9 @@ def oauth_login():
         # Canceled oauth or server error
         app.logger.error(
             '''Status code 500 from oauth, authentication error\n
-            Session: {0} \n {1} \n Request headers: {2} \n {3}'''.format(
-                session, r.url, r.request.headers, r.json()
+            User ID: {0} Course: {1} \n {2} \n Request headers: {3} \n {4}'''.format(
+                session['canvas_user_id'], session['course_id'],
+                r.url, r.request.headers, r.json()
             )
         )
 
@@ -293,7 +294,8 @@ def oauth_login():
             return render_template("error.html", msg=msg)
 
     app.logger.warning(
-        "Some other error\n {0} \n Request headers: {1} \n {2}".format(
+        "Some other error\n User: {0} Course: {1} \n {2} \n Request headers: {3} \n {4}".format(
+            session['canvas_user_id'], session['course_id'],
             r.url, r.request.headers, r.json()
         )
     )
@@ -355,9 +357,6 @@ def auth():
                                 session['refresh_token'],
                                 session['expires_in']
                             )
-                            # "user ID", session['canvas_user_id'], "\n",
-                            # "Refresh token", session['refresh_token'], "\n",
-                            # "Oauth expiration in session", session['expires_in']
                         )
                         msg = "Authentication error, please refresh and try again."
                         return render_template("error.html", msg=msg)
@@ -375,12 +374,12 @@ def auth():
                     return redirect(url_for('index'))
                 else:
                     app.logger.info(
-                        '''Reauthenticating: \n User ID: {0} \n
-                        Refresh token: {1} \n
-                        Oauth expiration in session: {2} \n {3} \n {4} \n {5}'''.format(
-                            session['canvas_user_id'], session['refresh_token'],
-                            session['expires_in'], r.status_code, r.url,
-                            r.request.headers
+                        '''Reauthenticating: \n User ID: {0} \n Course: {1}
+                        Refresh token: {2} \n
+                        Oauth expiration in session: {3} \n {4} \n {5} \n {6}'''.format(
+                            session['canvas_user_id'], session['course_id'],
+                            session['refresh_token'], session['expires_in'],
+                            r.status_code, r.url, r.request.headers
                         )
                     )
                     return redirect(
@@ -390,11 +389,11 @@ def auth():
                     )
                 app.logger.error(
                     '''Some other error: \n
-                    User ID: {0} \n Refresh token: {1} \n
-                    Oauth expiration in session: {2} \n {3} \n {4} \n {5} {6}'''.format(
-                        session['canvas_user_id'], session['refresh_token'],
-                        session['expires_in'], r.status_code, r.url,
-                        r.request.headers, r.json()
+                    User ID: {0}  Course: {1} \n Refresh token: {2} \n
+                    Oauth expiration in session: {3} \n {4} \n {5} \n {6} {7}'''.format(
+                        session['canvas_user_id'], session['course_id'],
+                        session['refresh_token'], session['expires_in'], r.status_code,
+                        r.url, r.request.headers, r.json()
                     )
                 )
                 msg = "Authentication error, please refresh and try again."
@@ -417,7 +416,12 @@ def auth():
         )
         return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
                         '&response_type=code&redirect_uri='+settings.oauth2_uri)
-
+    app.logger.warning(
+        "Some other error, {0} {1}".format(
+            session['canvas_user_id'],
+            session['course_id']
+        )
+    )
     msg = "Authentication error, please refresh and try again."
     return render_template("error.html", msg=msg)
 
