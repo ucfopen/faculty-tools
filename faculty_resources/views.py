@@ -116,9 +116,12 @@ def check_valid_user(f):
             )
 
         # make sure that they are enrolled in this course
-        canvas = Canvas(settings.API_URL, settings.API_KEY)
-        user = canvas.get_user(session['canvas_user_id'])
-        user_enrollments = user.get_enrollments()
+        try:
+            canvas = Canvas(settings.API_URL, settings.API_KEY)
+            user = canvas.get_user(session['canvas_user_id'])
+            user_enrollments = user.get_enrollments()
+        except CanvasException:
+            app.logger.exception("Couldn't connect to Canvas")
 
         enrolled = False
 
