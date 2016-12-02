@@ -74,13 +74,20 @@ def check_valid_user(f):
             app.permanent_session_lifetime = timedelta(minutes=60)
             session['course_id'] = request.form.get('custom_canvas_course_id')
             session['canvas_user_id'] = request.form.get('custom_canvas_user_id')
-
             roles = request.form['roles']
+
             if "Administrator" in roles:
                 session['admin'] = True
                 session['instructor'] = True
+            elif 'admin' in session:
+                # remove old admin key in the session
+                session.pop('admin', None)
+
             if "Instructor" in roles:
                 session['instructor'] = True
+            elif 'instructor' in session:
+                # remove old instructor key from the session
+                session.pop('instructor', None)
 
         # no session and no request
         if not session:
@@ -114,7 +121,9 @@ def check_valid_user(f):
             app.logger.warning("Not enrolled as Teacher or an Admin. Not allowed.")
             return render_template(
                 'error.html',
-                msg='You are not enrolled in this course as a Teacher or Designer.'
+                msg='''You are not enrolled in this course as a Teacher or Designer.
+                    Please refresh and try again. If this error persists, please contact
+                    ***REMOVED***.'''
             )
 
         if 'admin' not in session:
@@ -163,9 +172,8 @@ def index():
 
     # Test API key to see if they need to reauthenticate
     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-    r = requests.get(settings.API_URL+'accounts/%s/' % settings.UCF_ID, headers=auth_header)
-
-    if 'WWW-Authenticate' in r.request.headers or r.status_code == 401:
+    r = requests.get(settings.API_URL+'users/self', headers=auth_header)
+    if 'WWW-Authenticate' in r.request.headers:
         # reroll oauth
         app.logger.info(
             '''WWW-Authenticate found in headers, or status code was 401.
@@ -174,12 +182,46 @@ def index():
         return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
                         '&response_type=code&redirect_uri='+settings.oauth2_uri)
 
-    canvas = Canvas(settings.API_URL, session['api_key'])
-    # account = canvas.get_account(settings.UCF_ID)
-    account = canvas.get_account(1)
-    global_ltis = account.get_external_tools()
-    course = canvas.get_course(session['course_id'])
-    course_ltis = course.get_external_tools()
+    if 'WWW-Authenticate' not in r.request.headers and r.status_code == 401:
+        # not authorized
+        app.logger.warning("Not an Admin. Not allowed.")
+        return render_template(
+            'error.html',
+            msg='''You are not enrolled in this course as a Teacher or Designer.
+            If this error persists, please contact ***REMOVED***.'''
+        )
+
+    if r.status_code == 404:
+        # something is wrong with the key! It can't get user out of the API key
+        app.logger.error(
+            '''404 in checking the user's api key. Request info:\n
+            User ID: {0} Course: {1} \n {2} \n Request headers: {3} \n {4}'''.format(
+                session['canvas_user_id'], session['course_id'],
+                r.url, r.request.headers, r.json()
+            )
+        )
+        return redirect(
+            settings.BASE_URL+'login/oauth2/auth?client_id=' +
+            settings.oauth2_id + '&response_type=code&redirect_uri='+settings.oauth2_uri
+        )
+
+    # get stuff from higher level account
+    try:
+        global_canvas = Canvas(settings.API_URL, settings.API_KEY)
+        global_account = global_canvas.get_account(settings.UCF_ID)
+        global_ltis = global_account.get_external_tools()
+
+        canvas = Canvas(settings.API_URL, session['api_key'])
+        course = canvas.get_course(session['course_id'])
+        course_ltis = course.get_external_tools()
+
+    except CanvasException:
+        app.logger.exception("Couldn't connect to Canvas")
+        return render_template(
+            'error.html', msg='''Couldn't connect to Canvas,
+            please refresh and try again. If this error persists,
+            please contact ***REMOVED***.'''
+        )
 
     lti_requests = []
     lti_list = []
@@ -215,7 +257,11 @@ def index():
                     CanvasException, lti, lti_list
                 )
             )
-            return render_template('error.html', msg="Couldn't connect to Canvas, please refresh and try again.")
+            return render_template(
+                'error.html', msg='''Couldn't connect to Canvas,
+                please refresh and try again. If this error persists,
+                please contact ***REMOVED***.'''
+            )
 
     return render_template(
         "mockup1.html",
@@ -235,7 +281,11 @@ def xml():
     except:
         app.logger.error("\nNo XML file.")
 
-        return render_template('error.html', msg="No XML file")
+        return render_template(
+            'error.html', msg='''No XML file. Please refresh
+            and try again. If this error persists,
+            please contact ***REMOVED***.'''
+        )
 
 # OAuth login
 
@@ -264,7 +314,9 @@ def oauth_login():
             )
         )
 
-        msg = "Authentication error, please refresh and try again."
+        msg = '''Authentication error,
+            please refresh and try again. If this error persists,
+            please contact ***REMOVED***.'''
         return render_template("error.html", msg=msg)
 
     if 'access_token' in r.json():
@@ -297,7 +349,9 @@ def oauth_login():
                     e, session['canvas_user_id'], session['refresh_token'], session['expires_in']
                 )
             )
-            msg = "Authentication error, please refresh and try again."
+            msg = '''Authentication error,
+            please refresh and try again. If this error persists,
+            please contact ***REMOVED***.'''
             return render_template("error.html", msg=msg)
 
     app.logger.warning(
@@ -306,7 +360,9 @@ def oauth_login():
             r.url, r.request.headers, r.json()
         )
     )
-    msg = "Authentication error, please refresh and try again."
+    msg = '''Authentication error,
+        please refresh and try again. If this error persists,
+        please contact ***REMOVED***.'''
     return render_template("error.html", msg=msg)
 
 
@@ -365,7 +421,9 @@ def auth():
                                 session['expires_in']
                             )
                         )
-                        msg = "Authentication error, please refresh and try again."
+                        msg = '''Authentication error,
+                            please refresh and try again. If this error persists,
+                            please contact ***REMOVED***.'''
                         return render_template("error.html", msg=msg)
 
                     return redirect(url_for('index'))
@@ -403,7 +461,9 @@ def auth():
                         r.url, r.request.headers, r.json()
                     )
                 )
-                msg = "Authentication error, please refresh and try again."
+                msg = '''Authentication error,
+                    please refresh and try again. If this error persists,
+                    please contact ***REMOVED***.'''
                 return render_template("error.html", msg=msg)
         else:
             # not in db, go go oauth!!
@@ -429,7 +489,8 @@ def auth():
             session['course_id']
         )
     )
-    msg = "Authentication error, please refresh and try again."
+    msg = '''Authentication error, please refresh and try again. If this error persists,
+        please contact ***REMOVED***.'''
     return render_template("error.html", msg=msg)
 
 
