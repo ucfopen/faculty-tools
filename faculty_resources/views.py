@@ -108,6 +108,8 @@ def check_valid_user(f):
             )
 
         # not permitted
+        # Instructor shows up in Teacher and Admin sessions
+        # If they are neither, they're not in the right place
         if 'instructor' not in session:
             app.logger.warning("Not enrolled as Teacher or an Admin. Not allowed.")
             return render_template(
@@ -115,27 +117,30 @@ def check_valid_user(f):
                 msg='You are not enrolled in this course as a Teacher or Designer.'
             )
 
-        # make sure that they are enrolled in this course
-        try:
-            canvas = Canvas(settings.API_URL, settings.API_KEY)
-            user = canvas.get_user(session['canvas_user_id'])
-            user_enrollments = user.get_enrollments()
-        except CanvasException:
-            app.logger.exception("Couldn't connect to Canvas")
+        if 'admin' not in session:
+            # check if teacher
 
-        enrolled = False
+            try:
+                canvas = Canvas(settings.API_URL, settings.API_KEY)
+                user = canvas.get_user(session['canvas_user_id'])
+                user_enrollments = user.get_enrollments()
+            except CanvasException:
+                app.logger.exception("Couldn't connect to Canvas")
+                return render_template(
+                    'error.html', msg='''Couldn't connect to Canvas,
+                    please refresh and try again. If this error persists,
+                    please contact ***REMOVED***.'''
+                )
 
-        for enrollment in user_enrollments:
-            if enrollment.course_id == int(session['course_id']):
-                if enrollment.type == "TeacherEnrollment":
-                    enrolled = True
-
-        if enrolled is False and 'admin' not in session:
-            app.logger.warning("Not an Admin. Not allowed.")
-            return render_template(
-                'error.html',
-                msg='You are not enrolled in this course as a Teacher or Designer.'
-            )
+            for enrollment in user_enrollments:
+                if enrollment.course_id == int(session['course_id']):
+                    # not an admin, and also not an instructor
+                    if enrollment.type != "TeacherEnrollment":
+                        app.logger.warning("Not an Admin. Not allowed.")
+                        return render_template(
+                            'error.html',
+                            msg='You are not enrolled in this course as a Teacher or Designer.'
+                        )
 
         return f(*args, **kwargs)
     return decorated_function
@@ -210,8 +215,7 @@ def index():
                     CanvasException, lti, lti_list
                 )
             )
-
-            pass
+            return render_template('error.html', msg="Couldn't connect to Canvas, please refresh and try again.")
 
     return render_template(
         "mockup1.html",
