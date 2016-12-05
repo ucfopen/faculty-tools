@@ -2,7 +2,7 @@
 
 ## Dev Key
 - You will need a dev key for OAuth. It can be generated on a local version of canvas for dev and testing. To get a local version of Canvas, check out [our Docker guide][1]. To get one for ***REMOVED*** or ***REMOVED***, ask the LMS admins.
-    - You can generate a key on your local version by going to **Courses / Site Admin / Developer Keys** in your local version of Canvas. You'll need to have your redirect URI **(oauth2_uri)** ready, since you need it to make the key. If using Docker, make sure the urls are **http** instead of **https**. When you make a key, copy the ID to **oauth2_id** and the key into **oauth2_key.**
+    - You can generate a key on your local version by going to **Courses / Site Admin / Developer Keys** in your local version of Canvas. You'll need to have your redirect URI **(oauth2_uri)** ready, since you need it to make the key. If using Docker, make sure the urls are **http** instead of **https**. When you make a key, copy the ID to **oauth2_id** and the key into **oauth2_key** in your settings file.
 
 ## Virtual Environment
 - Create a virtual environment and initiate it.
