@@ -5,7 +5,7 @@
     - You can generate a key on your local version by going to **Courses / Site Admin / Developer Keys** in your local version of Canvas. You'll need to have your redirect URI **(oauth2_uri)** ready, since you need it to make the key. If using Docker, make sure the urls are **http** instead of **https**. When you make a key, copy the ID to **oauth2_id** and the key into **oauth2_key** in your settings file.
 
 ## Virtual Environment
-- Create a virtual environment and initiate it.
+- Create a virtual environment and activate it.
 ``` 
 virtualenv venv
 source venv/bin/activate
