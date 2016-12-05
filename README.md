@@ -1,6 +1,7 @@
 # Documentation for Faculty Resources
 
 - You will need a dev key for OAuth. It can be generated on a local version of canvas. To get a local version of canvas, check out [our Docker guide][1].
+    - You can generate a key on your local version by going to Courses / Site Admin / Developer Keys.
 - Create a virtual environment. Install everything:
 
 ```
@@ -8,10 +9,11 @@ pip install -r requirements.txt
 ```
 
 - Keep whitelist.json in mind. What LTIs do you want the instructors and faculty to see?
-- Create a database with a table called main:
+- Change directory into the project folder. Create a database in the python shell:
 
 ```
-    CREATE TABLE main (primary_key INTEGER PRIMARY KEY, user_id NUMERIC, refresh_key TEXT, expires_in TEXT)
+    from views import db
+    db.create_all()
 ```
 
 - Run the views script.
