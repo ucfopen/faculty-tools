@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, request, redirect, url_for
+from flask import Flask, render_template, session, request, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 from pycanvas import Canvas
@@ -277,7 +277,9 @@ def xml():
     XML can be built at https://www.eduappcenter.com/
     """
     try:
-        return render_template('test.xml', url=request.url_root)
+        return Response(render_template(
+            'test.xml', url=request.url_root), mimetype='application/xml'
+        )
     except:
         app.logger.error("\nNo XML file.")
 
@@ -307,13 +309,21 @@ def oauth_login():
 
     if r.status_code == 500:
         # Canceled oauth or server error
-        app.logger.error(
-            '''Status code 500 from oauth, authentication error\n
-            User ID: {0} Course: {1} \n {2} \n Request headers: {3} \n {4}'''.format(
-                session['canvas_user_id'], session['course_id'],
-                r.url, r.request.headers, r.json()
+        if 'canvas_user_id' in session and 'course_id' in session:
+            app.logger.error(
+                '''Status code 500 from oauth, authentication error\n
+                User ID: {0} Course: {1} \n {2} \n Request headers: {3}'''.format(
+                    session['canvas_user_id'], session['course_id'],
+                    r.url, r.request.headers
+                )
             )
-        )
+        else:
+            app.logger.error(
+                '''Status code 500 from oauth, authentication error\n
+                User ID: None Course: None \n {0} \n Request headers: {1}'''.format(
+                    r.url, r.request.headers
+                )
+            )
 
         msg = '''Authentication error,
             please refresh and try again. If this error persists,
