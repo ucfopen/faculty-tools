@@ -288,6 +288,7 @@ def xml():
         )
 
 # OAuth login
+# Redirect URI
 
 
 @app.route('/oauthlogin', methods=['POST', 'GET'])
@@ -501,4 +502,5 @@ def auth():
 if __name__ == "__main__":
     app.debug = True
     app.secret_key = settings.secret_key
-    app.run(host="0.0.0.0", port=settings.port)
+    # app.run(host="0.0.0.0", port=settings.port)
+    app.run(host=settings.server_ip, port=settings.port)
