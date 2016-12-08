@@ -232,7 +232,15 @@ def index():
         lti_requests.append(lti)
 
     # load our white list
-    json_data = json.loads(open('whitelist.json').read())
+    try:
+        json_data = json.loads(open('whitelist.json').read())
+    except:
+        app.logger.exception("Error with whitelist.json")
+        return render_template(
+            'error.html', msg='''Error connecting to the LTI list.
+            Please refresh and try again. If this error persists,
+            please contact ***REMOVED***.'''
+        )
 
     for lti in lti_requests:
         try:
