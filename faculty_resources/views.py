@@ -272,7 +272,7 @@ def index():
             )
 
     return render_template(
-        "mockup1.html",
+        "main_template.html",
         ltis=lti_list,
         course=session['course_id']
     )

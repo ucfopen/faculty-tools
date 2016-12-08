@@ -1,6 +1,6 @@
 config.py
 settings.py
 *.db
-errorland.log
+errorland.log*
 venv/
 .DS_Store
