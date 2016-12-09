@@ -205,15 +205,14 @@ def index():
             settings.oauth2_id + '&response_type=code&redirect_uri='+settings.oauth2_uri
         )
 
-    # get stuff from higher level account
     try:
-        global_canvas = Canvas(settings.API_URL, settings.API_KEY)
-        global_account = global_canvas.get_account(settings.UCF_ID)
-        global_ltis = global_account.get_external_tools()
-
-        canvas = Canvas(settings.API_URL, session['api_key'])
-        course = canvas.get_course(session['course_id'])
-        course_ltis = course.get_external_tools()
+        auth_header = {'Authorization': 'Bearer ' + settings.API_KEY}
+        r = requests.get(
+            settings.API_URL+'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
+                session['course_id']
+            ), headers=auth_header
+        )
+        ltis = r.json()
 
     except CanvasException:
         app.logger.exception("Couldn't connect to Canvas")
@@ -223,13 +222,7 @@ def index():
             please contact ***REMOVED***.'''
         )
 
-    lti_requests = []
     lti_list = []
-
-    for lti in course_ltis:
-        lti_requests.append(lti)
-    for lti in global_ltis:
-        lti_requests.append(lti)
 
     # load our white list
     try:
@@ -242,34 +235,63 @@ def index():
             please contact ***REMOVED***.'''
         )
 
-    for lti in lti_requests:
-        try:
-            # check if the LTI is in the whitelist
-            for data in json_data:
-                if lti.name in data['name']:
-                    lti_list.append({
-                        "name": lti.name,
-                        "id": lti.id,
-                        "sessionless_launch_url": lti.get_sessionless_launch_url(),
-                        "desc": data['desc'],
-                        "heading": data['subheading'],
-                        "screenshot": data['screenshot'],
-                        "logo": data['logo'],
-                        "filter_by": data['filter_by']
-                    })
+    try:
+        # check if the LTI is in the whitelist
+        for data in json_data:
+            if data['name'] in str(ltis):
 
-        except CanvasException:
-            # this lti threw an exception when talking to Canvas
-            app.logger.error(
-                "Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n".format(
-                    CanvasException, lti, lti_list
-                )
+                # get the id from the lti
+                for lti in ltis:
+                    if lti['name'] == data['name']:
+                        sessionless_launch_url = None
+                        lti_id = lti['id']
+
+                        if 'course_navigation' in lti:
+                            if lti['course_navigation'] is not None:
+                                auth_header = {'Authorization': 'Bearer ' + settings.API_KEY}
+                                # get sessionless launch url for things that come from course nav
+                                r = requests.get(
+                                    settings.API_URL +
+                                    'courses/{0}/external_tools/sessionless_launch?id={1}&launch_type=course_navigation&access_token={2}'.format(
+                                        session['course_id'], lti_id, settings.API_KEY
+                                    ), headers=auth_header
+                                )
+                                sessionless_launch_url = r.json()['url']
+
+                        if sessionless_launch_url is None:
+                            auth_header = {'Authorization': 'Bearer ' + settings.API_KEY}
+                            # get sessionless launch url
+                            r = requests.get(
+                                settings.API_URL +
+                                'courses/{0}/external_tools/sessionless_launch?id={1}'.format(
+                                    session['course_id'], lti_id
+                                ), headers=auth_header
+                            )
+                            sessionless_launch_url = r.json()['url']
+
+                lti_list.append({
+                    "name": data['name'],
+                    "id": lti_id,
+                    "sessionless_launch_url": sessionless_launch_url,
+                    "desc": data['desc'],
+                    "heading": data['subheading'],
+                    "screenshot": data['screenshot'],
+                    "logo": data['logo'],
+                    "filter_by": data['filter_by']
+                })
+
+    except CanvasException:
+        # this lti threw an exception when talking to Canvas
+        app.logger.error(
+            "Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n".format(
+                CanvasException, lti, lti_list
             )
-            return render_template(
-                'error.html', msg='''Couldn't connect to Canvas,
-                please refresh and try again. If this error persists,
-                please contact ***REMOVED***.'''
-            )
+        )
+        return render_template(
+            'error.html', msg='''Couldn't connect to Canvas,
+            please refresh and try again. If this error persists,
+            please contact ***REMOVED***.'''
+        )
 
     return render_template(
         "main_template.html",
