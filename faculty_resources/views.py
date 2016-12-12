@@ -242,7 +242,8 @@ def index():
 
                 # get the id from the lti
                 for lti in ltis:
-                    if lti['name'] == data['name']:
+                    if lti['name'] == data['name'] and 'none' not in data['filter_by']:
+                        print data['filter_by']
                         sessionless_launch_url = None
                         lti_id = lti['id']
 
@@ -252,7 +253,8 @@ def index():
                                 # get sessionless launch url for things that come from course nav
                                 r = requests.get(
                                     settings.API_URL +
-                                    'courses/{0}/external_tools/sessionless_launch?id={1}&launch_type=course_navigation&access_token={2}'.format(
+                                    '''courses/{0}/external_tools/sessionless_launch?id={1}'''
+                                    '''&launch_type=course_navigation&access_token={2}'''.format(
                                         session['course_id'], lti_id, settings.API_KEY
                                     ), headers=auth_header
                                 )
@@ -269,16 +271,16 @@ def index():
                             )
                             sessionless_launch_url = r.json()['url']
 
-                lti_list.append({
-                    "name": data['name'],
-                    "id": lti_id,
-                    "sessionless_launch_url": sessionless_launch_url,
-                    "desc": data['desc'],
-                    "heading": data['subheading'],
-                    "screenshot": data['screenshot'],
-                    "logo": data['logo'],
-                    "filter_by": data['filter_by']
-                })
+                        lti_list.append({
+                            "name": data['name'],
+                            "id": lti_id,
+                            "sessionless_launch_url": sessionless_launch_url,
+                            "desc": data['desc'],
+                            "heading": data['subheading'],
+                            "screenshot": data['screenshot'],
+                            "logo": data['logo'],
+                            "filter_by": data['filter_by']
+                        })
 
     except CanvasException:
         # this lti threw an exception when talking to Canvas
