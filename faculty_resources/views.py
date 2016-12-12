@@ -243,7 +243,6 @@ def index():
                 # get the id from the lti
                 for lti in ltis:
                     if lti['name'] == data['name'] and 'none' not in data['filter_by']:
-                        print data['filter_by']
                         sessionless_launch_url = None
                         lti_id = lti['id']
 
@@ -258,7 +257,21 @@ def index():
                                         session['course_id'], lti_id, settings.API_KEY
                                     ), headers=auth_header
                                 )
-                                sessionless_launch_url = r.json()['url']
+                                if r.status_code >= 400:
+                                    app.logger.error(
+                                        '''Bad response while getting a sessionless launch url:'''
+                                        '''\n {0} {1}\n LTI: {2} \n'''.format(
+                                            r.status_code, r.url, lti
+                                        )
+                                    )
+                                    return render_template(
+                                        'error.html', msg='''Error in a response from Canvas,
+                                        please refresh and try again. If this error persists,
+                                        please contact ***REMOVED***.'''
+                                    )
+
+                                else:
+                                    sessionless_launch_url = r.json()['url']
 
                         if sessionless_launch_url is None:
                             auth_header = {'Authorization': 'Bearer ' + settings.API_KEY}
@@ -269,7 +282,20 @@ def index():
                                     session['course_id'], lti_id
                                 ), headers=auth_header
                             )
-                            sessionless_launch_url = r.json()['url']
+                            if r.status_code >= 400:
+                                app.logger.error(
+                                    '''Bad response while getting a sessionless launch url:'''
+                                    '''\n {0} {1}\n LTI: {2} \n'''.format(
+                                        r.status_code, r.url, lti
+                                    )
+                                )
+                                return render_template(
+                                    'error.html', msg='''Error in a response from Canvas,
+                                    please refresh and try again. If this error persists,
+                                    please contact ***REMOVED***.'''
+                                )
+                            else:
+                                sessionless_launch_url = r.json()['url']
 
                         lti_list.append({
                             "name": data['name'],
