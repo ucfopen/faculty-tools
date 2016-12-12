@@ -173,16 +173,16 @@ def index():
     # Test API key to see if they need to reauthenticate
     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
     r = requests.get(settings.API_URL+'users/self', headers=auth_header)
-    if 'WWW-Authenticate' in r.request.headers:
+    if 'WWW-Authenticate' in r.headers:
         # reroll oauth
         app.logger.info(
             '''WWW-Authenticate found in headers, or status code was 401.
-            Re-rolling oauth.\n {0} \n {1} \n {1}'''.format(r.status_code, r.request.headers, r.url)
+            Re-rolling oauth.\n {0} \n {1} \n {1}'''.format(r.status_code, r.headers, r.url)
         )
         return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
                         '&response_type=code&redirect_uri='+settings.oauth2_uri)
 
-    if 'WWW-Authenticate' not in r.request.headers and r.status_code == 401:
+    if 'WWW-Authenticate' not in r.headers and r.status_code == 401:
         # not authorized
         app.logger.warning("Not an Admin. Not allowed.")
         return render_template(
@@ -197,7 +197,7 @@ def index():
             '''404 in checking the user's api key. Request info:\n
             User ID: {0} Course: {1} \n {2} \n Request headers: {3} \n {4}'''.format(
                 session['canvas_user_id'], session['course_id'],
-                r.url, r.request.headers, r.json()
+                r.url, r.headers, r.json()
             )
         )
         return redirect(
@@ -212,7 +212,17 @@ def index():
                 session['course_id']
             ), headers=auth_header
         )
-        ltis = r.json()
+
+        ltis_json_list = []
+
+        if r.status_code == 200:
+            for lti in r.json():
+                ltis_json_list.append(lti)
+            while 'next' in r.links:
+                r = requests.get(r.links["next"]['url'], headers=auth_header)
+                if r.status_code == 200:
+                    for lti in r.json():
+                        ltis_json_list.append(lti)
 
     except CanvasException:
         app.logger.exception("Couldn't connect to Canvas")
@@ -238,10 +248,10 @@ def index():
     try:
         # check if the LTI is in the whitelist
         for data in json_data:
-            if data['name'] in str(ltis):
+            if data['name'] in str(ltis_json_list):
 
                 # get the id from the lti
-                for lti in ltis:
+                for lti in ltis_json_list:
                     if lti['name'] == data['name'] and 'none' not in data['filter_by']:
                         sessionless_launch_url = None
                         lti_id = lti['id']
@@ -372,14 +382,14 @@ def oauth_login():
                 '''Status code 500 from oauth, authentication error\n
                 User ID: {0} Course: {1} \n {2} \n Request headers: {3}'''.format(
                     session['canvas_user_id'], session['course_id'],
-                    r.url, r.request.headers
+                    r.url, r.headers
                 )
             )
         else:
             app.logger.error(
                 '''Status code 500 from oauth, authentication error\n
                 User ID: None Course: None \n {0} \n Request headers: {1}'''.format(
-                    r.url, r.request.headers
+                    r.url, r.headers
                 )
             )
 
@@ -426,7 +436,7 @@ def oauth_login():
     app.logger.warning(
         "Some other error\n User: {0} Course: {1} \n {2} \n Request headers: {3} \n {4}".format(
             session['canvas_user_id'], session['course_id'],
-            r.url, r.request.headers, r.json()
+            r.url, r.headers, r.json()
         )
     )
     msg = '''Authentication error,
@@ -504,7 +514,7 @@ def auth():
                                  (session['canvas_user_id']), headers=auth_header)
                 # check for WWW-Authenticate
                 # https://canvas.instructure.com/doc/api/file.oauth.html
-                if 'WWW-Authenticate' not in r.request.headers and r.status_code != 401:
+                if 'WWW-Authenticate' not in r.headers and r.status_code != 401:
                     return redirect(url_for('index'))
                 else:
                     app.logger.info(
@@ -513,7 +523,7 @@ def auth():
                         Oauth expiration in session: {3} \n {4} \n {5} \n {6}'''.format(
                             session['canvas_user_id'], session['course_id'],
                             session['refresh_token'], session['expires_in'],
-                            r.status_code, r.url, r.request.headers
+                            r.status_code, r.url, r.headers
                         )
                     )
                     return redirect(
@@ -527,7 +537,7 @@ def auth():
                     Oauth expiration in session: {3} \n {4} \n {5} \n {6} {7}'''.format(
                         session['canvas_user_id'], session['course_id'],
                         session['refresh_token'], session['expires_in'], r.status_code,
-                        r.url, r.request.headers, r.json()
+                        r.url, r.headers, r.json()
                     )
                 )
                 msg = '''Authentication error,
