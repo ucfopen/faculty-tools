@@ -14,6 +14,7 @@ source venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
+**Note:** You might get a hiccup on installing [PyCanvas][2]. Installation instructions are on that page.
 
 Keep whitelist.json in mind. What LTIs do you want the instructors and faculty to see?
 
@@ -40,3 +41,4 @@ python views.py
 - Copy the xml, install it into a test course. If you're using Docker, don't forget that it will only work on your Docker instance because of the dev key.
 
 [1]: https://***REMOVED***/snippets/73 "Docker Guide"
+[2]: https://***REMOVED***/techrangers/pycanvas
