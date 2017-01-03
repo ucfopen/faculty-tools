@@ -473,16 +473,6 @@ def auth():
                 }
                 r = requests.post(settings.BASE_URL+'login/oauth2/token', data=payload)
 
-                if r.status_code != 200:
-                    # weird response
-                    app.logger.info(
-                        '''Oauth request didn't return 200,
-                        bad api key or refresh token? {0} {1} \n {2}'''.format(
-                            session['canvas_user_id'],
-                            session['course_id'], payload
-                        )
-                    )
-
                 if 'access_token' in r.json():
                     session['api_key'] = r.json()['access_token']
                     app.logger.info(
@@ -517,6 +507,19 @@ def auth():
                         return render_template("error.html", msg=msg)
 
                     return redirect(url_for('index'))
+                else:
+                    # weird response
+                    app.logger.info(
+                        '''Access token not in json.
+                        Bad api key or refresh token? {0} {1} {2} \n {3} {4}'''.format(
+                            r.status_code, session['canvas_user_id'],
+                            session['course_id'], payload, r.url
+                        )
+                    )
+                    msg = '''Authentication error,
+                        please refresh and try again. If this error persists,
+                        please contact ***REMOVED***.'''
+                    return render_template("error.html", msg=msg)
             else:
                 # good to go!
                 # test the api key
