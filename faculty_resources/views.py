@@ -13,6 +13,7 @@ import settings
 
 app = Flask(__name__)
 app.config.from_object('config.DevelopmentConfig')
+app.secret_key = settings.secret_key
 db = SQLAlchemy(app)
 
 # ============================================
@@ -585,13 +586,3 @@ def auth():
     msg = '''Authentication error, please refresh and try again. If this error persists,
         please contact ***REMOVED***.'''
     return render_template("error.html", msg=msg)
-
-
-# ============================================
-# LTI Setup & Config
-# ============================================
-
-if __name__ == "__main__":
-    app.debug = True
-    app.secret_key = settings.secret_key
-    app.run(host=settings.server_ip, port=settings.port)

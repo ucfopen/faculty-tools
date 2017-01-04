@@ -1,7 +1,3 @@
-server_ip = "127.0.0.1"
-port = 0000
-servername = 'http://' + server_ip + ':5000'
-
 UCF_ID = '00000'
 
 API_URL = ''
@@ -17,7 +13,15 @@ secret_key = ''
 
 oauth2_id = ""
 oauth2_key = ""
-oauth2_uri = 'http://' + server_ip + ":" + str(port) + "/oauthlogin"
+oauth2_uri = ""
 
 LOG_MAX_BYTES = 10000
 LOG_BACKUP_COUNT = 1
+
+def select_db(x):
+    return {
+        'DevelopmentConfig': 'sqlite:///test.db',
+        'Config': 'sqlite:///test.db',
+        'BaseConfig': 'sqlite:///test.db',
+        'TestingConfig': 'sqlite:///test.db'
+    }.get(x, 'sqlite:///test2.db')
