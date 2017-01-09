@@ -12,7 +12,7 @@ import json
 import settings
 
 app = Flask(__name__)
-app.config.from_object('config.DevelopmentConfig')
+app.config.from_object(settings.configClass)
 app.secret_key = settings.secret_key
 db = SQLAlchemy(app)
 

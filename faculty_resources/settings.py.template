@@ -25,3 +25,5 @@ def select_db(x):
         'BaseConfig': 'sqlite:///test.db',
         'TestingConfig': 'sqlite:///test.db'
     }.get(x, 'sqlite:///test2.db')
+
+configClass = 'config.DevelopmentConfig'
