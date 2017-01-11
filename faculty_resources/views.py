@@ -433,7 +433,8 @@ def auth():
         # Found a user
         if user is not None:
             # Get the expiration date
-            expiration_date = datetime.strptime(user.expires_in, '%Y-%m-%d %H:%M:%S.%f')
+            print user.expires_in
+            expiration_date = datetime.strptime(user.expires_in, '%Y-%m-%d %H:%M:%S')
             refresh_token = user.refresh_key
 
             # If expired or no api_key
