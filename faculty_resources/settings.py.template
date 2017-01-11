@@ -27,3 +27,5 @@ def select_db(x):
     }.get(x, 'sqlite:///test2.db')
 
 configClass = 'config.DevelopmentConfig'
+
+whitelist = "whitelist.json"
