@@ -1,7 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
-from pycanvas import Canvas
 from pycanvas.exceptions import CanvasException
 from functools import wraps
 import logging
@@ -23,7 +22,7 @@ db = SQLAlchemy(app)
 
 if __name__ == '__main__':
     handler = RotatingFileHandler(
-                'errorland.log',
+                settings.ERROR_LOG,
                 maxBytes=settings.LOG_MAX_BYTES,
                 backupCount=settings.LOG_BACKUP_COUNT
             )
@@ -421,21 +420,25 @@ def oauth_login():
     return render_template("error.html", msg=msg)
 
 
+# Checking the user in the db
 @app.route('/auth', methods=['POST', 'GET'])
 @check_valid_user
 def auth():
 
     # if they aren't in our DB/their token is expired or invalid
     try:
+        # Try to grab the user
         user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
-        # get or add
+
+        # Found a user
         if user is not None:
-
+            # Get the expiration date
             expiration_date = datetime.strptime(user.expires_in, '%Y-%m-%d %H:%M:%S.%f')
-
             refresh_token = user.refresh_key
+
+            # If expired or no api_key
             if datetime.now() > expiration_date or 'api_key' not in session:
-                # expired! Use the refresh token
+
                 app.logger.info(
                     '''Expired refresh token or api_key not in session\n
                     User: {0} \n Expiration date in db: {1}'''.format(user.user_id, user.expires_in)
@@ -449,7 +452,9 @@ def auth():
                 }
                 r = requests.post(settings.BASE_URL+'login/oauth2/token', data=payload)
 
+                # We got an access token and can proceed
                 if 'access_token' in r.json():
+                    # Set the api key
                     session['api_key'] = r.json()['access_token']
                     app.logger.info(
                         "New access token created\n User: {0}".format(user.user_id)
@@ -465,10 +470,11 @@ def auth():
                         expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
                         session['expires_in'] = expires_in
                     try:
+                        # Try to save the new expiration date
                         user.expires_in = session['expires_in']
                         db.session.commit()
                     except Exception as e:
-                        # log error
+                        # log error, couldn't save new expiration date
                         app.logger.error(
                             '''Error in updating user in the db:\n {0} \n user ID {1} \n
                             Refresh token {2} \n Oauth expiration in session {3}'''.format(
@@ -484,7 +490,7 @@ def auth():
 
                     return redirect(url_for('index'))
                 else:
-                    # weird response
+                    # weird response from trying to use the refresh token
                     app.logger.info(
                         '''Access token not in json.
                         Bad api key or refresh token? {0} {1} {2} \n {3} {4}'''.format(

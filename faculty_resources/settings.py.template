@@ -17,6 +17,7 @@ oauth2_uri = ""
 
 LOG_MAX_BYTES = 10000
 LOG_BACKUP_COUNT = 1
+ERROR_LOG = "errorland.log"
 
 def select_db(x):
     return {
