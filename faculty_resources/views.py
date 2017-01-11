@@ -127,31 +127,6 @@ def check_valid_user(f):
                     ***REMOVED***.'''
             )
 
-        if 'admin' not in session:
-            # check if teacher
-
-            try:
-                canvas = Canvas(settings.API_URL, settings.API_KEY)
-                user = canvas.get_user(session['canvas_user_id'])
-                user_enrollments = user.get_enrollments()
-            except CanvasException:
-                app.logger.exception("Couldn't connect to Canvas")
-                return render_template(
-                    'error.html', msg='''Couldn't connect to Canvas,
-                    please refresh and try again. If this error persists,
-                    please contact ***REMOVED***.'''
-                )
-
-            for enrollment in user_enrollments:
-                if enrollment.course_id == int(session['course_id']):
-                    # not an admin, and also not an instructor
-                    if enrollment.type != "TeacherEnrollment":
-                        app.logger.warning("Not an Admin. Not allowed.")
-                        return render_template(
-                            'error.html',
-                            msg='You are not enrolled in this course as a Teacher or Designer.'
-                        )
-
         return f(*args, **kwargs)
     return decorated_function
 
@@ -207,7 +182,7 @@ def index():
         )
 
     try:
-        auth_header = {'Authorization': 'Bearer ' + settings.API_KEY}
+        auth_header = {'Authorization': 'Bearer ' + session['api_key']}
         r = requests.get(
             settings.API_URL+'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
                 session['course_id']
@@ -237,7 +212,7 @@ def index():
 
     # load our white list
     try:
-        json_data = json.loads(open('whitelist.json').read())
+        json_data = json.loads(open(settings.whitelist).read())
     except:
         app.logger.exception("Error with whitelist.json")
         return render_template(
@@ -259,13 +234,13 @@ def index():
 
                         if 'course_navigation' in lti:
                             if lti['course_navigation'] is not None:
-                                auth_header = {'Authorization': 'Bearer ' + settings.API_KEY}
+                                auth_header = {'Authorization': 'Bearer ' + session['api_key']}
                                 # get sessionless launch url for things that come from course nav
                                 r = requests.get(
                                     settings.API_URL +
                                     '''courses/{0}/external_tools/sessionless_launch?id={1}'''
                                     '''&launch_type=course_navigation&access_token={2}'''.format(
-                                        session['course_id'], lti_id, settings.API_KEY
+                                        session['course_id'], lti_id, session['api_key']
                                     ), headers=auth_header
                                 )
                                 if r.status_code >= 400:
@@ -285,7 +260,7 @@ def index():
                                     sessionless_launch_url = r.json()['url']
 
                         if sessionless_launch_url is None:
-                            auth_header = {'Authorization': 'Bearer ' + settings.API_KEY}
+                            auth_header = {'Authorization': 'Bearer ' + session['api_key']}
                             # get sessionless launch url
                             r = requests.get(
                                 settings.API_URL +
