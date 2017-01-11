@@ -372,7 +372,7 @@ def oauth_login():
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.'''
         return render_template("error.html", msg=msg)
-
+    print r.json()
     if 'access_token' in r.json():
         session['api_key'] = r.json()['access_token']
 
