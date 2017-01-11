@@ -12,7 +12,7 @@ import json
 import settings
 
 app = Flask(__name__)
-app.config.from_object('config.DevelopmentConfig')
+app.config.from_object(settings.configClass)
 app.secret_key = settings.secret_key
 db = SQLAlchemy(app)
 
@@ -43,8 +43,8 @@ if __name__ == '__main__':
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
-    refresh_key = db.Column(db.String)
-    expires_in = db.Column(db.String)
+    refresh_key = db.Column(db.String(255))
+    expires_in = db.Column(db.DateTime)
 
     def __init__(self, user_id, refresh_key, expires_in):
         self.user_id = user_id
