@@ -439,7 +439,7 @@ def auth():
         user = Users.query.get(int(session['canvas_user_id']))
 
         # Found a user
-        if user is not None:
+        if user:
             # Get the expiration date
             expiration_date = user.expires_in
             refresh_token = user.refresh_key
