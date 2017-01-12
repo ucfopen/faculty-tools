@@ -389,7 +389,7 @@ def oauth_login():
         try:
 
             # add to db
-            user = Users.query.get(canvas_id=int(session['canvas_user_id']))
+            user = Users.query.get(user_id=int(session['canvas_user_id']))
             if user:
                 print "trying to update old user"
                 user.refresh_token = session['refresh_token']
