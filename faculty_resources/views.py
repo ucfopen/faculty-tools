@@ -391,11 +391,13 @@ def oauth_login():
             # add to db
             user = Users.query.get(int(session['canvas_user_id']))
             if user:
+                print "trying to update old user"
                 user.refresh_token = session['refresh_token']
                 user.expires_in = session['expires_in']
                 db.session.add(user)
                 db.session.commit()
             else:
+                print "trying to add new user"
                 new_user = Users(
                     session['canvas_user_id'],
                     session['refresh_token'],
@@ -406,6 +408,7 @@ def oauth_login():
             return redirect(url_for('index'))
 
         except Exception as e:
+            print traceback.print_exc()
             app.logger.error(
                 "Error in adding new user to db: \n {0} {1} {2} {3} ".format(
                     e, session['canvas_user_id'], session['refresh_token'], session['expires_in']
