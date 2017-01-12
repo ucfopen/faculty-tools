@@ -40,8 +40,7 @@ if __name__ == '__main__':
 
 
 class Users(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, primary_key=True)
     refresh_key = db.Column(db.String(255))
     expires_in = db.Column(db.DateTime)
 
@@ -428,12 +427,10 @@ def auth():
     # if they aren't in our DB/their token is expired or invalid
     try:
         # Try to grab the user
-        user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
-
+        user = Users.query.get(int(session['canvas_user_id']))
         # Found a user
         if user is not None:
             # Get the expiration date
-            print user.expires_in
             expiration_date = datetime.strptime(user.expires_in, '%Y-%m-%d %H:%M:%S')
             refresh_token = user.refresh_key
 
