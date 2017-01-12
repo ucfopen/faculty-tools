@@ -389,7 +389,7 @@ def oauth_login():
         try:
 
             # add to db
-            user = Users.query.filter_by(user_id=int(session['canvas_user_id']))
+            user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
             if user:
                 print "trying to update old user"
                 user.refresh_token = session['refresh_token']
@@ -439,7 +439,8 @@ def auth():
     # if they aren't in our DB/their token is expired or invalid
     try:
         # Try to grab the user
-        user = Users.query.filter_by(user_id=int(session['canvas_user_id']))
+        user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
+
 
         # Found a user
         if user:
