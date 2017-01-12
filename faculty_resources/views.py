@@ -9,6 +9,7 @@ from logging import Formatter
 import requests
 import json
 import settings
+import traceback
 
 app = Flask(__name__)
 app.config.from_object(settings.configClass)
@@ -372,7 +373,7 @@ def oauth_login():
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.'''
         return render_template("error.html", msg=msg)
-
+    print r.json()
     if 'access_token' in r.json():
         session['api_key'] = r.json()['access_token']
 
@@ -433,11 +434,14 @@ def auth():
         # Found a user
         if user is not None:
             # Get the expiration date
-            expiration_date = datetime.strptime(user.expires_in, '%Y-%m-%d %H:%M:%S')
+            expiration_date = user.expires_in
             refresh_token = user.refresh_key
 
             # If expired or no api_key
             if datetime.now() > expiration_date or 'api_key' not in session:
+                print datetime.now()
+                print expiration_date
+                print "got here"
 
                 app.logger.info(
                     '''Expired refresh token or api_key not in session\n
@@ -550,6 +554,8 @@ def auth():
             return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
                             '&response_type=code&redirect_uri='+settings.oauth2_uri)
     except Exception as e:
+        print e
+        print traceback.print_exc()
         # they aren't in the db, so send em to the oauth stuff
         app.logger.info(
             "Error getting a person from the db, reuathenticating: {0} {1}".format(
