@@ -389,13 +389,20 @@ def oauth_login():
         try:
 
             # add to db
-            new_user = Users(
-                session['canvas_user_id'],
-                session['refresh_token'],
-                session['expires_in']
-            )
-            db.session.add(new_user)
-            db.session.commit()
+            user = Users.query.get(int(session['canvas_user_id']))
+            if user:
+                user.refresh_token = session['refresh_token']
+                user.expires_in = session['expires_in']
+                db.session.add(user)
+                db.session.commit()
+            else:
+                new_user = Users(
+                    session['canvas_user_id'],
+                    session['refresh_token'],
+                    session['expires_in']
+                )
+                db.session.add(new_user)
+                db.session.commit()
             return redirect(url_for('index'))
 
         except Exception as e:
