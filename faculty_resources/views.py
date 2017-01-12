@@ -9,6 +9,7 @@ from logging import Formatter
 import requests
 import json
 import settings
+import traceback
 
 app = Flask(__name__)
 app.config.from_object(settings.configClass)
@@ -551,6 +552,8 @@ def auth():
             return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
                             '&response_type=code&redirect_uri='+settings.oauth2_uri)
     except Exception as e:
+        print e
+        print traceback.print_exc()
         # they aren't in the db, so send em to the oauth stuff
         app.logger.info(
             "Error getting a person from the db, reuathenticating: {0} {1}".format(
