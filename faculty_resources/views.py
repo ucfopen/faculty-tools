@@ -434,12 +434,16 @@ def auth():
         # Found a user
         if user is not None:
             # Get the expiration date
-            print user.expires_in
-            expiration_date = datetime.strptime(user.expires_in, '%Y-%m-%d %H:%M:%S')
+            
+
+            expiration_date = user.expires_in
             refresh_token = user.refresh_key
 
             # If expired or no api_key
             if datetime.now() > expiration_date or 'api_key' not in session:
+                print datetime.now()
+                print expiration_date
+                print "got here"
 
                 app.logger.info(
                     '''Expired refresh token or api_key not in session\n
