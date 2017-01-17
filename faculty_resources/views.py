@@ -58,6 +58,12 @@ class Users(db.Model):
 # Utility Functions
 # ============================================
 
+@app.context_processor
+def utility_processor():
+    def google_analytics():
+        return settings.GOOGLE_ANALYTICS
+    return dict(google_analytics=google_analytics)
+
 
 def check_valid_user(f):
     @wraps(f)
