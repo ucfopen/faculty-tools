@@ -195,7 +195,7 @@ def index():
                 please contact ***REMOVED***.''')
 
     lti_list = []
-
+    json_data = None
     # load our white list
     if os.path.isfile(settings.whitelist):
         json_data = json.loads(open(settings.whitelist).read())
@@ -205,7 +205,7 @@ def index():
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.''')
 
-    if json_data:
+    if json_data is not None:
         # check if the LTI is in the whitelist
         for data in json_data:
             if data['name'] in str(ltis_json_list):
