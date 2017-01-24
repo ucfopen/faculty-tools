@@ -376,11 +376,6 @@ def oauth_login():
 
                 # compare what was saved to the old session
                 # if it didn't update, error
-                print check_expiration.expires_in
-                print type(check_expiration.expires_in)
-                print "date time comparison"
-                print session['expires_in']
-                print type(session['expires_in'])
                 if check_expiration.expires_in != session['expires_in']:
 
                     app.logger.error(
@@ -505,6 +500,12 @@ def auth():
 
                     # compare what was saved to the old session
                     # if it didn't update, error
+                    print check_expiration.expires_in
+                    print type(check_expiration.expires_in)
+                    print "date time comparison"
+                    print session['expires_in']
+                    print type(session['expires_in'])
+
                     if check_expiration.expires_in != session['expires_in']:
 
                         app.logger.error(
