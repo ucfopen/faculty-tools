@@ -356,7 +356,7 @@ def oauth_login():
 
             # check if user is in the db
             user = Users.query.get(int(session['canvas_user_id']))
-            if user:
+            if user is not None:
                 # update current user's expiration time in db
                 user.refresh_token = session['refresh_token']
                 user.expires_in = session['expires_in']
