@@ -59,6 +59,12 @@ class Users(db.Model):
 # Utility Functions
 # ============================================
 
+@app.context_processor
+def utility_processor():
+    def google_analytics():
+        return settings.GOOGLE_ANALYTICS
+    return dict(google_analytics=google_analytics)
+
 
 def return_error(msg):
     return render_template('error.html', msg=msg)
@@ -355,16 +361,17 @@ def oauth_login():
             session['expires_in'] = expires_in
 
             # check if user is in the db
-            user = Users.query.get(int(session['canvas_user_id']))
+            user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
             if user is not None:
-                # update current user's expiration time in db
+
+                # update the current user's expiration time in db
                 user.refresh_token = session['refresh_token']
                 user.expires_in = session['expires_in']
                 db.session.add(user)
                 db.session.commit()
 
                 # check that the expires_in time got updated
-                check_expiration = Users.query.get(int(session['canvas_user_id']))
+                check_expiration = Users.query.filter_by(user_id=int(session['canvas_user_id']))
 
                 # compare what was saved to the old session
                 # if it didn't update, error
@@ -394,7 +401,7 @@ def oauth_login():
                 db.session.commit()
 
                 # check that the user got added
-                check_user = Users.query.get(int(session['canvas_user_id']))
+                check_user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
 
                 if check_user is None:
                     # Error in adding user to the DB
@@ -413,6 +420,7 @@ def oauth_login():
 
             # got beyond if/else
             # error in adding or updating db
+
             app.logger.error(
                 "Error in adding or updating user to db: \n {0} {1} {2} ".format(
                     session['canvas_user_id'], session['refresh_token'], session['expires_in']
@@ -438,9 +446,8 @@ def oauth_login():
 @check_valid_user
 def auth():
 
-    # if they aren't in our DB/their token is expired or invalid
     # Try to grab the user
-    user = Users.query.get(int(session['canvas_user_id']))
+    user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
 
     # Found a user
     if user is not None:
@@ -482,30 +489,31 @@ def auth():
                     expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
                     session['expires_in'] = expires_in
 
-                # Try to save the new expiration date
-                user.expires_in = session['expires_in']
-                db.session.commit()
+                    # Try to save the new expiration date
+                    user.expires_in = session['expires_in']
+                    db.session.commit()
 
-                # check that the expiration date updated
-                check_expiration = Users.query.get(int(session['canvas_user_id']))
+                    # check that the expiration date updated
+                    check_expiration = Users.query.filter_by(
+                        user_id=int(session['canvas_user_id'])).first()
 
-                # compare what was saved to the old session
-                # if it didn't update, error
-                if check_expiration.expires_in != session['expires_in']:
+                    # compare what was saved to the old session
+                    # if it didn't update, error
+                    if check_expiration.expires_in != session['expires_in']:
 
-                    app.logger.error(
-                        '''Error in updating user's expiration time in the db:\n {0} \n user ID {1} \n
-                        Refresh token {2} \n Oauth expiration in session {3}'''.format(
-                            session['canvas_user_id'],
-                            session['refresh_token'],
-                            session['expires_in']
+                        app.logger.error(
+                            '''Error in updating user's expiration time in the db:\n {0} \n user ID {1} \n
+                            Refresh token {2} \n Oauth expiration in session {3}'''.format(
+                                session['canvas_user_id'],
+                                session['refresh_token'],
+                                session['expires_in']
+                            )
                         )
-                    )
-                    return_error('''Authentication error,
-                        please refresh and try again. If this error persists,
-                        please contact ***REMOVED***.''')
-                else:
-                    return redirect(url_for('index'))
+                        return_error('''Authentication error,
+                            please refresh and try again. If this error persists,
+                            please contact ***REMOVED***.''')
+                    else:
+                        return redirect(url_for('index'))
             else:
                 # weird response from trying to use the refresh token
                 app.logger.info(

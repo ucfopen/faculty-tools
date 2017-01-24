@@ -30,3 +30,5 @@ def select_db(x):
 configClass = 'config.DevelopmentConfig'
 
 whitelist = "whitelist.json"
+
+GOOGLE_ANALYTICS=''
