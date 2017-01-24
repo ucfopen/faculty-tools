@@ -502,12 +502,8 @@ def auth():
                     if check_expiration.expires_in != session['expires_in']:
 
                         app.logger.error(
-                            '''Error in updating user's expiration time in the db:\n {0} \n user ID {1} \n
-                            Refresh token {2} \n Oauth expiration in session {3}'''.format(
-                                session['canvas_user_id'],
-                                session['refresh_token'],
-                                session['expires_in']
-                            )
+                            '''Error in updating user's expiration time
+                             in the db:\n session: {}'''.format(session)
                         )
                         return_error('''Authentication error,
                             please refresh and try again. If this error persists,
