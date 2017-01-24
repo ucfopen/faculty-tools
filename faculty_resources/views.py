@@ -320,7 +320,7 @@ def oauth_login():
     r = requests.post(settings.BASE_URL+'login/oauth2/token', data=payload)
 
     if r.status_code == 500:
-        # Canceled oauth or server error
+        # Canceled oauth (clicked cancel instead of Authorize) or server error
         if 'canvas_user_id' in session and 'course_id' in session:
             app.logger.error(
                 '''Status code 500 from oauth, authentication error\n
@@ -352,14 +352,14 @@ def oauth_login():
             # add the seconds to current time for expiration time
             current_time = datetime.now()
             expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
-            session['new_expires_in'] = expires_in
+            session['expires_in'] = expires_in
 
             # check if user is in the db
             user = Users.query.get(int(session['canvas_user_id']))
             if user:
                 # update current user's expiration time in db
                 user.refresh_token = session['refresh_token']
-                user.expires_in = session['new_expires_in']
+                user.expires_in = session['expires_in']
                 db.session.add(user)
                 db.session.commit()
 
@@ -368,7 +368,7 @@ def oauth_login():
 
                 # compare what was saved to the old session
                 # if it didn't update, error
-                if check_expiration.expires_in == session['expires_in']:
+                if check_expiration.expires_in != session['expires_in']:
 
                     app.logger.error(
                         '''Error in updating user's expiration time in the db:\n {0} \n user ID {1} \n
@@ -480,10 +480,10 @@ def auth():
                     # add the seconds to current time for expiration time
                     current_time = datetime.now()
                     expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
-                    session['new_expires_in'] = expires_in
+                    session['expires_in'] = expires_in
 
                 # Try to save the new expiration date
-                user.expires_in = session['new_expires_in']
+                user.expires_in = session['expires_in']
                 db.session.commit()
 
                 # check that the expiration date updated
@@ -491,7 +491,7 @@ def auth():
 
                 # compare what was saved to the old session
                 # if it didn't update, error
-                if check_expiration.expires_in == session['expires_in']:
+                if check_expiration.expires_in != session['expires_in']:
 
                     app.logger.error(
                         '''Error in updating user's expiration time in the db:\n {0} \n user ID {1} \n
