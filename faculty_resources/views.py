@@ -186,21 +186,21 @@ def index():
             ), headers=auth_header
         )
 
-        ltis_json_list = []
+    ltis_json_list = []
 
-        if r.status_code == 200:
-            for lti in r.json():
-                ltis_json_list.append(lti)
-            while 'next' in r.links:
-                r = requests.get(r.links["next"]['url'], headers=auth_header)
-                if r.status_code == 200:
-                    for lti in r.json():
-                        ltis_json_list.append(lti)
-        else:
-            app.logger.exception("Couldn't connect to Canvas")
-            return_error('''Couldn't connect to Canvas,
-                please refresh and try again. If this error persists,
-                please contact ***REMOVED***.''')
+    if r.status_code == 200:
+        for lti in r.json():
+            ltis_json_list.append(lti)
+        while 'next' in r.links:
+            r = requests.get(r.links["next"]['url'], headers=auth_header)
+            if r.status_code == 200:
+                for lti in r.json():
+                    ltis_json_list.append(lti)
+    else:
+        app.logger.exception("Couldn't connect to Canvas")
+        return_error('''Couldn't connect to Canvas,
+            please refresh and try again. If this error persists,
+            please contact ***REMOVED***.''')
 
     lti_list = []
     json_data = None
