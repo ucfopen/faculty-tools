@@ -10,6 +10,7 @@ import requests
 import json
 import settings
 import traceback
+import time
 import os
 
 app = Flask(__name__)
@@ -45,7 +46,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, unique=True)
     refresh_key = db.Column(db.String(255))
-    expires_in = db.Column(db.DateTime)
+    expires_in = db.Column(db.Integer)
 
     def __init__(self, user_id, refresh_key, expires_in):
         self.user_id = user_id
@@ -357,8 +358,10 @@ def oauth_login():
         if 'expires_in' in r.json():
             # expires in seconds
             # add the seconds to current time for expiration time
-            current_time = datetime.now()
-            expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
+            # current_time = datetime.now()
+            current_time = int(time.time())
+            # expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
+            expires_in = current_time + r.json()['expires_in']
             session['expires_in'] = expires_in
 
             # check if user is in the db
@@ -457,7 +460,8 @@ def auth():
         refresh_token = user.refresh_key
 
         # If expired or no api_key
-        if datetime.now() > expiration_date or 'api_key' not in session:
+        # if datetime.now() > expiration_date or 'api_key' not in session:
+        if int(time.time()) > expiration_date or 'api_key' not in session:
 
             app.logger.info(
                 '''Expired refresh token or api_key not in session\n
@@ -486,8 +490,10 @@ def auth():
                 if 'expires_in' in r.json():
                     # expires in seconds
                     # add the seconds to current time for expiration time
-                    current_time = datetime.now()
-                    expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
+                    # current_time = datetime.now()
+                    current_time = int(time.time())
+                    # expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
+                    expires_in = current_time + r.json()['expires_in']
                     session['expires_in'] = expires_in
 
                     # Try to save the new expiration date
@@ -504,10 +510,9 @@ def auth():
                     print type(check_expiration.expires_in)
                     print "date time comparison"
                     print session['expires_in']
-                    print session['expires_in'].replace(microsecond=0)
                     print type(session['expires_in'])
 
-                    if check_expiration.expires_in != session['expires_in'].replace(microsecond=0):
+                    if check_expiration.expires_in != session['expires_in']:
 
                         app.logger.error(
                             '''Error in updating user's expiration time
