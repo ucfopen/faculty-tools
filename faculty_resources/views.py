@@ -107,24 +107,24 @@ def check_valid_user(f):
         if not session:
             if not request.form:
                 app.logger.warning("No session and no request. Not allowed.")
-                return_error('Not allowed!')
+                return return_error('Not allowed!')
 
         # no canvas_user_id
         if not request.form.get('custom_canvas_user_id') and 'canvas_user_id' not in session:
             app.logger.warning("No canvas user ID. Not allowed.")
-            return_error('Not allowed!')
+            return return_error('Not allowed!')
 
         # no course_id
         if not request.form.get('custom_canvas_course_id') and 'course_id' not in session:
             app.logger.warning("No course ID. Not allowed.")
-            return_error('Not allowed!')
+            return return_error('Not allowed!')
 
         # not permitted
         # Instructor shows up in Teacher and Admin sessions
         # If they are neither, they're not in the right place
         if 'instructor' and 'admin' not in session:
             app.logger.warning("Not enrolled as Teacher or an Admin. Not allowed.")
-            return_error('''You are not enrolled in this course as a Teacher or Designer.
+            return return_error('''You are not enrolled in this course as a Teacher or Designer.
                 Please refresh and try again. If this error persists, please contact
                 ***REMOVED***.''')
 
@@ -162,7 +162,7 @@ def index():
     if 'WWW-Authenticate' not in r.headers and r.status_code == 401:
         # not authorized
         app.logger.warning("Not an Admin. Not allowed.")
-        return_error('''You are not enrolled in this course as a Teacher or Designer.
+        return return_error('''You are not enrolled in this course as a Teacher or Designer.
             If this error persists, please contact ***REMOVED***.''')
 
     if r.status_code == 404:
@@ -198,7 +198,7 @@ def index():
                     ltis_json_list.append(lti)
     else:
         app.logger.exception("Couldn't connect to Canvas")
-        return_error('''Couldn't connect to Canvas,
+        return return_error('''Couldn't connect to Canvas,
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.''')
 
@@ -209,7 +209,7 @@ def index():
         json_data = json.loads(open(settings.whitelist).read())
     else:
         app.logger.exception("Error with whitelist.json")
-        return_error('''Couldn't connect to Canvas,
+        return return_error('''Couldn't connect to Canvas,
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.''')
 
@@ -242,7 +242,7 @@ def index():
                                             r.status_code, r.url, lti
                                         )
                                     )
-                                    return_error('''Error in a response from Canvas,
+                                    return return_error('''Error in a response from Canvas,
                                         please refresh and try again. If this error persists,
                                         please contact ***REMOVED***.''')
                                 else:
@@ -264,7 +264,7 @@ def index():
                                         r.status_code, r.url, lti
                                     )
                                 )
-                                return_error('''Error in a response from Canvas,
+                                return return_error('''Error in a response from Canvas,
                                     please refresh and try again. If this error persists,
                                     please contact ***REMOVED***.''')
                             else:
@@ -288,7 +288,7 @@ def index():
                 CanvasException, lti, lti_list
             )
         )
-        return_error('''Couldn't connect to Canvas,
+        return return_error('''Couldn't connect to Canvas,
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.''')
 
@@ -345,7 +345,7 @@ def oauth_login():
                 )
             )
 
-        return_error('''Authentication error,
+        return return_error('''Authentication error,
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.''')
 
@@ -389,7 +389,7 @@ def oauth_login():
                             session['expires_in']
                         )
                     )
-                    return_error('''Authentication error,
+                    return return_error('''Authentication error,
                         please refresh and try again. If this error persists,
                         please contact ***REMOVED***.''')
                 else:
@@ -416,7 +416,7 @@ def oauth_login():
                             session['expires_in']
                         )
                     )
-                    return_error('''Authentication error,
+                    return return_error('''Authentication error,
                         please refresh and try again. If this error persists,
                         please contact ***REMOVED***.''')
                 else:
@@ -430,7 +430,7 @@ def oauth_login():
                     session['canvas_user_id'], session['refresh_token'], session['expires_in']
                 )
             )
-            return_error('''Authentication error,
+            return return_error('''Authentication error,
                 please refresh and try again. If this error persists,
                 please contact ***REMOVED***.''')
 
@@ -441,7 +441,7 @@ def oauth_login():
             r.url, r.headers, r.json()
         )
     )
-    return_error('''Authentication error, please refresh and try again. If this error persists,
+    return return_error('''Authentication error, please refresh and try again. If this error persists,
         please contact ***REMOVED***.''')
 
 
@@ -518,7 +518,7 @@ def auth():
                             '''Error in updating user's expiration time
                              in the db:\n session: {}'''.format(session)
                         )
-                        return_error('''Authentication error,
+                        return return_error('''Authentication error,
                             please refresh and try again. If this error persists,
                             please contact ***REMOVED***.''')
                     else:
@@ -532,7 +532,7 @@ def auth():
                         session['course_id'], payload, r.url
                     )
                 )
-                return_error('''Authentication error,
+                return return_error('''Authentication error,
                     please refresh and try again. If this error persists,
                     please contact ***REMOVED***.''')
         else:
@@ -569,7 +569,7 @@ def auth():
                     r.url, r.headers, r.json()
                 )
             )
-            return_error('''Authentication error,
+            return return_error('''Authentication error,
                 please refresh and try again. If this error persists,
                 please contact ***REMOVED***.''')
     else:
@@ -587,5 +587,5 @@ def auth():
             session['course_id']
         )
     )
-    return_error('''Authentication error, please refresh and try again. If this error persists,
+    return return_error('''Authentication error, please refresh and try again. If this error persists,
         please contact ***REMOVED***.''')
