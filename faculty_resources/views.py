@@ -505,11 +505,6 @@ def auth():
 
                     # compare what was saved to the old session
                     # if it didn't update, error
-                    print check_expiration.expires_in
-                    print type(check_expiration.expires_in)
-                    print "date time comparison"
-                    print session['expires_in']
-                    print type(session['expires_in'])
 
                     if check_expiration.expires_in == long(session['expires_in']):
                         return redirect(url_for('index'))

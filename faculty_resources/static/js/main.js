@@ -14,7 +14,7 @@ $(document).ready(function() {
         if(!$("div.card").is(":visible")) {
             // empty set of cards, show empty msg
             if ($("#no_ltis").length == 0) {
-                $("#all_tools").parent().append("<p class='text-center' id='no_ltis'>No LTIs available in this category</p>");
+                $("#all_tools").parent().append("<p class='text-center' id='no_ltis'>No LTIs available in this category.</p>");
             } else {
                 $("#no_ltis").fadeIn();
             }
