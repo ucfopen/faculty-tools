@@ -512,7 +512,7 @@ def auth():
                     print session['expires_in']
                     print type(session['expires_in'])
 
-                    if check_expiration.expires_in != session['expires_in']:
+                    if check_expiration.expires_in != long(session['expires_in']):
 
                         app.logger.error(
                             '''Error in updating user's expiration time
