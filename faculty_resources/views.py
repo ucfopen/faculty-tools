@@ -179,12 +179,12 @@ def index():
             settings.oauth2_id + '&response_type=code&redirect_uri='+settings.oauth2_uri
         )
 
-        auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-        r = requests.get(
-            settings.API_URL+'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
-                session['course_id']
-            ), headers=auth_header
-        )
+    auth_header = {'Authorization': 'Bearer ' + session['api_key']}
+    r = requests.get(
+        settings.API_URL+'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
+            session['course_id']
+        ), headers=auth_header
+    )
 
     ltis_json_list = []
 
