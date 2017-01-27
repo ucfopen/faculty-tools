@@ -379,8 +379,9 @@ def oauth_login():
 
                 # compare what was saved to the old session
                 # if it didn't update, error
-                if check_expiration.expires_in != session['expires_in']:
-
+                if check_expiration.expires_in == long(session['expires_in']):
+                    return redirect(url_for('index'))
+                else:
                     app.logger.error(
                         '''Error in updating user's expiration time in the db:\n {0} \n user ID {1} \n
                         Refresh token {2} \n Oauth expiration in session {3}'''.format(
@@ -392,8 +393,6 @@ def oauth_login():
                     return return_error('''Authentication error,
                         please refresh and try again. If this error persists,
                         please contact ***REMOVED***.''')
-                else:
-                    return redirect(url_for('index'))
             else:
                 # add new user to db
                 new_user = Users(
@@ -512,8 +511,9 @@ def auth():
                     print session['expires_in']
                     print type(session['expires_in'])
 
-                    if check_expiration.expires_in != long(session['expires_in']):
-
+                    if check_expiration.expires_in == long(session['expires_in']):
+                        return redirect(url_for('index'))
+                    else:
                         app.logger.error(
                             '''Error in updating user's expiration time
                              in the db:\n session: {}'''.format(session)
@@ -521,8 +521,6 @@ def auth():
                         return return_error('''Authentication error,
                             please refresh and try again. If this error persists,
                             please contact ***REMOVED***.''')
-                    else:
-                        return redirect(url_for('index'))
             else:
                 # weird response from trying to use the refresh token
                 app.logger.info(
