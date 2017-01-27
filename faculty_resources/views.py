@@ -46,7 +46,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, unique=True)
     refresh_key = db.Column(db.String(255))
-    expires_in = db.Column(db.Integer)
+    expires_in = db.Column(db.BigInteger)
 
     def __init__(self, user_id, refresh_key, expires_in):
         self.user_id = user_id
