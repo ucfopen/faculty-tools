@@ -2,7 +2,6 @@ UCF_ID = '00000'
 
 API_URL = ''
 BASE_URL = ''
-API_KEY = ''
 oauth_creds = { 'key': 'secret'}
 
 secret_key = ''
@@ -17,7 +16,7 @@ oauth2_uri = ""
 
 LOG_MAX_BYTES = 10000
 LOG_BACKUP_COUNT = 1
-ERROR_LOG = "errorland.log"
+ERROR_LOG = "error.log"
 
 def select_db(x):
     return {

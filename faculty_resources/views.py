@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pycanvas.exceptions import CanvasException
 from functools import wraps
 import logging
@@ -9,7 +9,6 @@ from logging import Formatter
 import requests
 import json
 import settings
-import traceback
 import time
 import os
 
@@ -22,19 +21,17 @@ db = SQLAlchemy(app)
 # Logging
 # ============================================
 
-
-if __name__ == '__main__':
-    handler = RotatingFileHandler(
-                settings.ERROR_LOG,
-                maxBytes=settings.LOG_MAX_BYTES,
-                backupCount=settings.LOG_BACKUP_COUNT
-            )
-    handler.setLevel(logging.getLevelName(logging.INFO))
-    handler.setFormatter(Formatter(
-        '%(asctime)s %(levelname)s: %(message)s '
-        '[in %(pathname)s: %(lineno)d of %(funcName)s]'
-    ))
-    app.logger.addHandler(handler)
+handler = RotatingFileHandler(
+            settings.ERROR_LOG,
+            maxBytes=settings.LOG_MAX_BYTES,
+            backupCount=settings.LOG_BACKUP_COUNT
+        )
+handler.setLevel(logging.getLevelName(logging.INFO))
+handler.setFormatter(Formatter(
+    '%(asctime)s %(levelname)s: %(message)s '
+    '[in %(pathname)s: %(lineno)d of %(funcName)s]'
+))
+app.logger.addHandler(handler)
 
 
 # ============================================
@@ -142,10 +139,6 @@ def index():
     """
     Main entry point to web application, call all the things and send the data to the template
     """
-
-    # Get data from the higher level account
-    # account = canvas.get_account(settings.UCF_ID)
-    # 1 for dev
 
     # Test API key to see if they need to reauthenticate
     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
