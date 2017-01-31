@@ -145,7 +145,7 @@ def check_valid_user(f):
 @app.route("/")
 @check_valid_user
 @lti(error=error, role='staff', app=app)
-def index():
+def index(lti=lti):
     """
     Main entry point to web application, call all the things and send the data to the template
     """
@@ -314,7 +314,8 @@ def xml():
 
 
 @app.route('/oauthlogin', methods=['POST', 'GET'])
-def oauth_login():
+@lti(error=error, request='session', role='staff', app=app)
+def oauth_login(lti=lti):
 
     code = request.args.get('code')
     payload = {
@@ -439,7 +440,7 @@ def oauth_login():
 @app.route('/auth', methods=['POST', 'GET'])
 @lti(error=error, request='initial', role='staff', app=app)
 @check_valid_user
-def auth():
+def auth(lti=lti):
 
     # Try to grab the user
     user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
