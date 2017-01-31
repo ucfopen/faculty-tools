@@ -2,6 +2,7 @@ from flask import Flask, render_template, session, request, redirect, url_for, R
 from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta
 from pycanvas.exceptions import CanvasException
+from pylti.flask import lti
 from functools import wraps
 import logging
 from logging.handlers import RotatingFileHandler
@@ -67,6 +68,15 @@ def utility_processor():
 
 def return_error(msg):
     return render_template('error.html', msg=msg)
+
+# for the pylti decorator
+
+
+def error(exception):
+    app.logger.error("PyLTI error: {}".format(exception))
+    return render_template('error.html', msg='''Authentication error,
+        please refresh and try again. If this error persists,
+        please contact ***REMOVED***.''')
 
 
 def check_valid_user(f):
@@ -182,13 +192,13 @@ def index():
     ltis_json_list = []
 
     if r.status_code == 200:
-        for lti in r.json():
-            ltis_json_list.append(lti)
+        for lti_obj in r.json():
+            ltis_json_list.append(lti_obj)
         while 'next' in r.links:
             r = requests.get(r.links["next"]['url'], headers=auth_header)
             if r.status_code == 200:
-                for lti in r.json():
-                    ltis_json_list.append(lti)
+                for lti_obj in r.json():
+                    ltis_json_list.append(lti_obj)
     else:
         app.logger.exception("Couldn't connect to Canvas")
         return return_error('''Couldn't connect to Canvas,
@@ -212,10 +222,10 @@ def index():
             if data['name'] in str(ltis_json_list):
 
                 # get the id from the lti
-                for lti in ltis_json_list:
-                    if lti['name'] == data['name'] and 'none' not in data['filter_by']:
+                for lti_obj in ltis_json_list:
+                    if lti_obj['name'] == data['name'] and 'none' not in data['filter_by']:
                         sessionless_launch_url = None
-                        lti_id = lti['id']
+                        lti_id = lti_obj['id']
 
                         if 'course_navigation' in lti:
                             if lti['course_navigation'] is not None:
@@ -307,7 +317,6 @@ def xml():
 
 
 @app.route('/oauthlogin', methods=['POST', 'GET'])
-# @check_valid_user
 def oauth_login():
 
     code = request.args.get('code')
@@ -322,21 +331,13 @@ def oauth_login():
 
     if r.status_code == 500:
         # Canceled oauth (clicked cancel instead of Authorize) or server error
-        if 'canvas_user_id' in session and 'course_id' in session:
-            app.logger.error(
-                '''Status code 500 from oauth, authentication error\n
-                User ID: {0} Course: {1} \n {2} \n Request headers: {3}'''.format(
-                    session['canvas_user_id'], session['course_id'],
-                    r.url, r.headers
-                )
+
+        app.logger.error(
+            '''Status code 500 from oauth, authentication error\n
+            User ID: None Course: None \n {0} \n Request headers: {1} {2}'''.format(
+                r.url, r.headers, session
             )
-        else:
-            app.logger.error(
-                '''Status code 500 from oauth, authentication error\n
-                User ID: None Course: None \n {0} \n Request headers: {1}'''.format(
-                    r.url, r.headers
-                )
-            )
+        )
 
         return return_error('''Authentication error,
             please refresh and try again. If this error persists,
@@ -439,6 +440,7 @@ def oauth_login():
 
 # Checking the user in the db
 @app.route('/auth', methods=['POST', 'GET'])
+@lti(error=error, request='initial', role='staff', app=app)
 @check_valid_user
 def auth():
 
@@ -484,7 +486,6 @@ def auth():
                     # add the seconds to current time for expiration time
                     # current_time = datetime.now()
                     current_time = int(time.time())
-                    # expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
                     expires_in = current_time + r.json()['expires_in']
                     session['expires_in'] = expires_in
 
