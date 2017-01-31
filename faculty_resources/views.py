@@ -71,9 +71,9 @@ def return_error(msg):
 # for the pylti decorator
 
 
-def error(exception):
+def error(exception=None):
     app.logger.error("PyLTI error: {}".format(exception))
-    return render_template('error.html', msg='''Authentication error,
+    return return_error('''Authentication error,
         please refresh and try again. If this error persists,
         please contact ***REMOVED***.''')
 
@@ -144,6 +144,7 @@ def check_valid_user(f):
 
 @app.route("/")
 @check_valid_user
+@lti(error=error, role='staff', app=app)
 def index():
     """
     Main entry point to web application, call all the things and send the data to the template
@@ -286,10 +287,7 @@ def index():
     else:
         # this lti threw an exception when talking to Canvas
         app.logger.error(
-            "Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n".format(
-                CanvasException, lti, lti_list
-            )
-        )
+            "Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n".format(lti, lti_list))
         return return_error('''Couldn't connect to Canvas,
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.''')
