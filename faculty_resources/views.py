@@ -143,8 +143,8 @@ def check_valid_user(f):
 
 
 @app.route("/")
-@check_valid_user
 @lti(error=error, role='staff', app=app)
+@check_valid_user
 def index(lti=lti):
     """
     Main entry point to web application, call all the things and send the data to the template
