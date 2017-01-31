@@ -1,7 +1,6 @@
 from flask import Flask, render_template, session, request, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 from datetime import timedelta
-from pycanvas.exceptions import CanvasException
 from pylti.flask import lti
 from functools import wraps
 import logging
