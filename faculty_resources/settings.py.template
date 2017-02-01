@@ -2,7 +2,16 @@ UCF_ID = '00000'
 
 API_URL = ''
 BASE_URL = ''
-oauth_creds = { 'key': 'secret'}
+
+# consumer key and secret
+
+PYLTI_CONFIG = {
+    'consumers': {
+        "key": {
+            "secret": "secret"
+        }
+    }
+}
 
 secret_key = ''
 
