@@ -227,8 +227,8 @@ def index(lti=lti):
                         sessionless_launch_url = None
                         lti_id = lti_obj['id']
 
-                        if 'course_navigation' in lti:
-                            if lti['course_navigation'] is not None:
+                        if 'course_navigation' in lti_obj:
+                            if lti_obj['course_navigation'] is not None:
                                 auth_header = {'Authorization': 'Bearer ' + session['api_key']}
                                 # get sessionless launch url for things that come from course nav
                                 r = requests.get(
@@ -242,7 +242,7 @@ def index(lti=lti):
                                     app.logger.error(
                                         '''Bad response while getting a sessionless launch url:'''
                                         '''\n {0} {1}\n LTI: {2} \n'''.format(
-                                            r.status_code, r.url, lti
+                                            r.status_code, r.url, lti_obj
                                         )
                                     )
                                     return return_error('''Error in a response from Canvas,
@@ -264,7 +264,7 @@ def index(lti=lti):
                                 app.logger.error(
                                     '''Bad response while getting a sessionless launch url:'''
                                     '''\n {0} {1}\n LTI: {2} \n'''.format(
-                                        r.status_code, r.url, lti
+                                        r.status_code, r.url, lti_obj
                                     )
                                 )
                                 return return_error('''Error in a response from Canvas,
@@ -287,7 +287,7 @@ def index(lti=lti):
     else:
         # this lti threw an exception when talking to Canvas
         app.logger.error(
-            "Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n".format(lti, lti_list))
+            "Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n".format(lti_obj, lti_list))
         return return_error('''Couldn't connect to Canvas,
             please refresh and try again. If this error persists,
             please contact ***REMOVED***.''')
