@@ -350,9 +350,7 @@ def oauth_login(lti=lti):
         if 'expires_in' in r.json():
             # expires in seconds
             # add the seconds to current time for expiration time
-            # current_time = datetime.now()
             current_time = int(time.time())
-            # expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
             expires_in = current_time + r.json()['expires_in']
             session['expires_in'] = expires_in
 
@@ -375,12 +373,7 @@ def oauth_login(lti=lti):
                     return redirect(url_for('index'))
                 else:
                     app.logger.error(
-                        '''Error in updating user's expiration time in the db:\n {0} \n user ID {1} \n
-                        Refresh token {2} \n Oauth expiration in session {3}'''.format(
-                            session['canvas_user_id'],
-                            session['refresh_token'],
-                            session['expires_in']
-                        )
+                        '''Error in updating user's expiration time in the db:\n {}'''.format(session)
                     )
                     return return_error('''Authentication error,
                         please refresh and try again. If this error persists,
@@ -401,11 +394,7 @@ def oauth_login(lti=lti):
                 if check_user is None:
                     # Error in adding user to the DB
                     app.logger.error(
-                        "Error in adding user to db: \n {0} {1} {2} ".format(
-                            session['canvas_user_id'],
-                            session['refresh_token'],
-                            session['expires_in']
-                        )
+                        "Error in adding user to db: \n {}".format(session)
                     )
                     return return_error('''Authentication error,
                         please refresh and try again. If this error persists,
@@ -417,9 +406,7 @@ def oauth_login(lti=lti):
             # error in adding or updating db
 
             app.logger.error(
-                "Error in adding or updating user to db: \n {0} {1} {2} ".format(
-                    session['canvas_user_id'], session['refresh_token'], session['expires_in']
-                )
+                "Error in adding or updating user to db: \n {}".format(session)
             )
             return return_error('''Authentication error,
                 please refresh and try again. If this error persists,
@@ -452,12 +439,12 @@ def auth(lti=lti):
         refresh_token = user.refresh_key
 
         # If expired or no api_key
-        # if datetime.now() > expiration_date or 'api_key' not in session:
         if int(time.time()) > expiration_date or 'api_key' not in session:
-
+            readable_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(user.expires_in))
             app.logger.info(
                 '''Expired refresh token or api_key not in session\n
-                User: {0} \n Expiration date in db: {1}'''.format(user.user_id, user.expires_in)
+                User: {0} \n Expiration date in db: {1}
+                Readable expires_in: {2}'''.format(user.user_id, user.expires_in, readable_time)
             )
             payload = {
                 'grant_type': 'refresh_token',
@@ -503,7 +490,9 @@ def auth(lti=lti):
                     else:
                         app.logger.error(
                             '''Error in updating user's expiration time
-                             in the db:\n session: {}'''.format(session)
+                             in the db:\n session: {} Readable timestamp: {}'''.format(
+                                session, readable_time
+                            )
                         )
                         return return_error('''Authentication error,
                             please refresh and try again. If this error persists,
@@ -532,12 +521,11 @@ def auth(lti=lti):
                 return redirect(url_for('index'))
             else:
                 app.logger.info(
-                    '''Reauthenticating: \n User ID: {0} \n Course: {1}
-                    Refresh token: {2} \n
-                    Oauth expiration in session: {3} \n {4} \n {5} \n {6}'''.format(
-                        session['canvas_user_id'], session['course_id'],
-                        session['refresh_token'], session['expires_in'],
-                        r.status_code, r.url, r.headers
+                    '''Reauthenticating \nSession: {}
+                    Status code: {}
+                    URL: {}
+                    headers: {}'''.format(
+                        session, r.status_code, r.url, r.headers
                     )
                 )
                 return redirect(
@@ -547,10 +535,10 @@ def auth(lti=lti):
                 )
             app.logger.error(
                 '''Some other error: \n
-                User ID: {0}  Course: {1} \n Refresh token: {2} \n
-                Oauth expiration in session: {3} \n {4} \n {5} \n {6} {7}'''.format(
-                    session['canvas_user_id'], session['course_id'],
-                    session['refresh_token'], session['expires_in'], r.status_code,
+                Session: {}
+                Status code: {} URL: {}
+                Headers: {}'''.format(
+                    session, r.status_code,
                     r.url, r.headers, r.json()
                 )
             )
