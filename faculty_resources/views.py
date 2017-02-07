@@ -129,7 +129,8 @@ def check_valid_user(f):
         # Instructor shows up in Teacher and Admin sessions
         # If they are neither, they're not in the right place
         if 'instructor' or 'admin' not in session:
-            app.logger.warning("Not enrolled as Teacher or an Admin. Not allowed.")
+            app.logger.warning('''Not enrolled as Teacher or an Admin.
+                Not allowed. Session: {}'''.format(session))
             return return_error('''You are not enrolled in this course as a Teacher or Designer.
                 Please refresh and try again. If this error persists, please contact
                 ***REMOVED***.''')
