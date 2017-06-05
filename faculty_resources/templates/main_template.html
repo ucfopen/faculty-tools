@@ -41,31 +41,39 @@
 	</div>
 
 	<!-- LTIs -->
-	{% for lti_batch in ltis|batch(3) %}
-	<div class="row">
-		<div class="col-md-12">
-		<div class="card-deck-wrapper">
-			<div class="card-deck">
-			{% for lti in lti_batch %}
-				<div class="card" data-filter="{{lti.filter_by}}">
-				<h3 class="card-title text-center">{{lti.heading}}</h3>
-					<div class="container text-center">
-					<p class="text-center margin-20"><a class="btn btn-primary" href="{{lti.sessionless_launch_url}}">Launch {{ lti.name }}</a></p>
-					<img class="card-img-top img-fluid margin-10" src={{ url_for('static', filename='img/'+lti.screenshot) }} alt="Screenshot" />
+	{% if ltis|length > 0 %}
+		{% for lti_batch in ltis|batch(3) %}
+		<div class="row">
+			<div class="col-md-12">
+			<div class="card-deck-wrapper">
+				<div class="card-deck">
+				{% for lti in lti_batch %}
+					<div class="card" data-filter="{{lti.filter_by}}">
+					<h3 class="card-title text-center">{{lti.heading}}</h3>
+						<div class="container text-center">
+						<p class="text-center margin-20"><a class="btn btn-primary" href="{{lti.sessionless_launch_url}}">Launch {{ lti.name }}</a></p>
+						<img class="card-img-top img-fluid margin-10" src={{ url_for('static', filename='img/'+lti.screenshot) }} alt="Screenshot" />
+						</div>
+
+						<div class="card-block">
+							<img class="img-fluid thumbnail" src={{ url_for('static', filename='img/'+lti.logo) }} alt="{{lti.name}} logo" />
+							<p class="card-text">{{lti.desc}}</p>
+							<br style="clear: both;" />
+						</div>
 					</div>
 
-					<div class="card-block">
-						<img class="img-fluid thumbnail" src={{ url_for('static', filename='img/'+lti.logo) }} alt="{{lti.name}} logo" />
-						<p class="card-text">{{lti.desc}}</p>
-						<br style="clear: both;" />
-					</div>
+					{% endfor %}
 				</div>
-
-				{% endfor %}
+			</div>
 			</div>
 		</div>
+		{% endfor %}
+	{% else %}
+	<div class="row">
+		<div class="col-md-8 offset-md-2">
+			<p class="text-center" id="no_ltis">No LTIs available in this category.</p>
+			<hr />
 		</div>
 	</div>
-
-	{% endfor %}
+	{% endif %}
 	{% endblock content %}

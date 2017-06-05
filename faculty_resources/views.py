@@ -1,7 +1,7 @@
 from flask import Flask, render_template, session, request, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta
-from pycanvas.exceptions import CanvasException
+from datetime import timedelta
+from pylti.flask import lti
 from functools import wraps
 import logging
 from logging.handlers import RotatingFileHandler
@@ -9,7 +9,8 @@ from logging import Formatter
 import requests
 import json
 import settings
-import traceback
+import time
+import os
 
 app = Flask(__name__)
 app.config.from_object(settings.configClass)
@@ -20,19 +21,17 @@ db = SQLAlchemy(app)
 # Logging
 # ============================================
 
-
-if __name__ == '__main__':
-    handler = RotatingFileHandler(
-                settings.ERROR_LOG,
-                maxBytes=settings.LOG_MAX_BYTES,
-                backupCount=settings.LOG_BACKUP_COUNT
-            )
-    handler.setLevel(logging.getLevelName(logging.INFO))
-    handler.setFormatter(Formatter(
-        '%(asctime)s %(levelname)s: %(message)s '
-        '[in %(pathname)s: %(lineno)d of %(funcName)s]'
-    ))
-    app.logger.addHandler(handler)
+handler = RotatingFileHandler(
+            settings.ERROR_LOG,
+            maxBytes=settings.LOG_MAX_BYTES,
+            backupCount=settings.LOG_BACKUP_COUNT
+        )
+handler.setLevel(logging.getLevelName(logging.INFO))
+handler.setFormatter(Formatter(
+    '%(asctime)s %(levelname)s: %(message)s '
+    '[in %(pathname)s: %(lineno)d of %(funcName)s]'
+))
+app.logger.addHandler(handler)
 
 
 # ============================================
@@ -44,7 +43,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, unique=True)
     refresh_key = db.Column(db.String(255))
-    expires_in = db.Column(db.DateTime)
+    expires_in = db.Column(db.BigInteger)
 
     def __init__(self, user_id, refresh_key, expires_in):
         self.user_id = user_id
@@ -58,11 +57,25 @@ class Users(db.Model):
 # Utility Functions
 # ============================================
 
+
 @app.context_processor
 def utility_processor():
     def google_analytics():
         return settings.GOOGLE_ANALYTICS
     return dict(google_analytics=google_analytics)
+
+
+def return_error(msg):
+    return render_template('error.html', msg=msg)
+
+# for the pylti decorator
+
+
+def error(exception=None):
+    app.logger.error("PyLTI error: {}".format(exception))
+    return return_error('''Authentication error,
+        please refresh and try again. If this error persists,
+        please contact ***REMOVED***.''')
 
 
 def check_valid_user(f):
@@ -100,38 +113,28 @@ def check_valid_user(f):
         if not session:
             if not request.form:
                 app.logger.warning("No session and no request. Not allowed.")
-                return render_template(
-                    'error.html',
-                    msg='Not allowed!'
-                )
+                return return_error('Not allowed!')
 
         # no canvas_user_id
         if not request.form.get('custom_canvas_user_id') and 'canvas_user_id' not in session:
             app.logger.warning("No canvas user ID. Not allowed.")
-            return render_template(
-                'error.html',
-                msg='Not allowed!'
-            )
+            return return_error('Not allowed!')
 
         # no course_id
         if not request.form.get('custom_canvas_course_id') and 'course_id' not in session:
             app.logger.warning("No course ID. Not allowed.")
-            return render_template(
-                'error.html',
-                msg='No course_id provided.'
-            )
+            return return_error('Not allowed!')
 
         # not permitted
         # Instructor shows up in Teacher and Admin sessions
         # If they are neither, they're not in the right place
-        if 'instructor' not in session:
-            app.logger.warning("Not enrolled as Teacher or an Admin. Not allowed.")
-            return render_template(
-                'error.html',
-                msg='''You are not enrolled in this course as a Teacher or Designer.
-                    Please refresh and try again. If this error persists, please contact
-                    ***REMOVED***.'''
-            )
+
+        if 'instructor' not in session or 'admin' not in session:
+            app.logger.warning('''Not enrolled as Teacher or an Admin.
+                Not allowed. Session: {}'''.format(session))
+            return return_error('''You are not enrolled in this course as a Teacher or Designer.
+                Please refresh and try again. If this error persists, please contact
+                ***REMOVED***.''')
 
         return f(*args, **kwargs)
     return decorated_function
@@ -142,15 +145,12 @@ def check_valid_user(f):
 
 
 @app.route("/")
+@lti(error=error, role='staff', app=app)
 @check_valid_user
-def index():
+def index(lti=lti):
     """
     Main entry point to web application, call all the things and send the data to the template
     """
-
-    # Get data from the higher level account
-    # account = canvas.get_account(settings.UCF_ID)
-    # 1 for dev
 
     # Test API key to see if they need to reauthenticate
     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
@@ -167,11 +167,8 @@ def index():
     if 'WWW-Authenticate' not in r.headers and r.status_code == 401:
         # not authorized
         app.logger.warning("Not an Admin. Not allowed.")
-        return render_template(
-            'error.html',
-            msg='''You are not enrolled in this course as a Teacher or Designer.
-            If this error persists, please contact ***REMOVED***.'''
-        )
+        return return_error('''You are not enrolled in this course as a Teacher or Designer.
+            If this error persists, please contact ***REMOVED***.''')
 
     if r.status_code == 404:
         # something is wrong with the key! It can't get user out of the API key
@@ -187,59 +184,53 @@ def index():
             settings.oauth2_id + '&response_type=code&redirect_uri='+settings.oauth2_uri
         )
 
-    try:
-        auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-        r = requests.get(
-            settings.API_URL+'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
-                session['course_id']
-            ), headers=auth_header
-        )
+    auth_header = {'Authorization': 'Bearer ' + session['api_key']}
+    r = requests.get(
+        settings.API_URL+'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
+            session['course_id']
+        ), headers=auth_header
+    )
 
-        ltis_json_list = []
+    ltis_json_list = []
 
-        if r.status_code == 200:
-            for lti in r.json():
-                ltis_json_list.append(lti)
-            while 'next' in r.links:
-                r = requests.get(r.links["next"]['url'], headers=auth_header)
-                if r.status_code == 200:
-                    for lti in r.json():
-                        ltis_json_list.append(lti)
-
-    except CanvasException:
+    if r.status_code == 200:
+        for lti_obj in r.json():
+            ltis_json_list.append(lti_obj)
+        while 'next' in r.links:
+            r = requests.get(r.links["next"]['url'], headers=auth_header)
+            if r.status_code == 200:
+                for lti_obj in r.json():
+                    ltis_json_list.append(lti_obj)
+    else:
         app.logger.exception("Couldn't connect to Canvas")
-        return render_template(
-            'error.html', msg='''Couldn't connect to Canvas,
+        return return_error('''Couldn't connect to Canvas,
             please refresh and try again. If this error persists,
-            please contact ***REMOVED***.'''
-        )
+            please contact ***REMOVED***.''')
 
     lti_list = []
-
+    json_data = None
     # load our white list
-    try:
+    if os.path.isfile(settings.whitelist):
         json_data = json.loads(open(settings.whitelist).read())
-    except:
+    else:
         app.logger.exception("Error with whitelist.json")
-        return render_template(
-            'error.html', msg='''Error connecting to the LTI list.
-            Please refresh and try again. If this error persists,
-            please contact ***REMOVED***.'''
-        )
+        return return_error('''Couldn't connect to Canvas,
+            please refresh and try again. If this error persists,
+            please contact ***REMOVED***.''')
 
-    try:
+    if json_data is not None:
         # check if the LTI is in the whitelist
         for data in json_data:
             if data['name'] in str(ltis_json_list):
 
                 # get the id from the lti
-                for lti in ltis_json_list:
-                    if lti['name'] == data['name'] and 'none' not in data['filter_by']:
+                for lti_obj in ltis_json_list:
+                    if lti_obj['name'] == data['name'] and 'none' not in data['filter_by']:
                         sessionless_launch_url = None
-                        lti_id = lti['id']
+                        lti_id = lti_obj['id']
 
-                        if 'course_navigation' in lti:
-                            if lti['course_navigation'] is not None:
+                        if 'course_navigation' in lti_obj:
+                            if lti_obj['course_navigation'] is not None:
                                 auth_header = {'Authorization': 'Bearer ' + session['api_key']}
                                 # get sessionless launch url for things that come from course nav
                                 r = requests.get(
@@ -253,15 +244,12 @@ def index():
                                     app.logger.error(
                                         '''Bad response while getting a sessionless launch url:'''
                                         '''\n {0} {1}\n LTI: {2} \n'''.format(
-                                            r.status_code, r.url, lti
+                                            r.status_code, r.url, lti_obj
                                         )
                                     )
-                                    return render_template(
-                                        'error.html', msg='''Error in a response from Canvas,
+                                    return return_error('''Error in a response from Canvas,
                                         please refresh and try again. If this error persists,
-                                        please contact ***REMOVED***.'''
-                                    )
-
+                                        please contact ***REMOVED***.''')
                                 else:
                                     sessionless_launch_url = r.json()['url']
 
@@ -278,14 +266,12 @@ def index():
                                 app.logger.error(
                                     '''Bad response while getting a sessionless launch url:'''
                                     '''\n {0} {1}\n LTI: {2} \n'''.format(
-                                        r.status_code, r.url, lti
+                                        r.status_code, r.url, lti_obj
                                     )
                                 )
-                                return render_template(
-                                    'error.html', msg='''Error in a response from Canvas,
+                                return return_error('''Error in a response from Canvas,
                                     please refresh and try again. If this error persists,
-                                    please contact ***REMOVED***.'''
-                                )
+                                    please contact ***REMOVED***.''')
                             else:
                                 sessionless_launch_url = r.json()['url']
 
@@ -300,18 +286,13 @@ def index():
                             "filter_by": data['filter_by']
                         })
 
-    except CanvasException:
+    else:
         # this lti threw an exception when talking to Canvas
         app.logger.error(
-            "Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n".format(
-                CanvasException, lti, lti_list
-            )
-        )
-        return render_template(
-            'error.html', msg='''Couldn't connect to Canvas,
+            "Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n".format(lti_obj, lti_list))
+        return return_error('''Couldn't connect to Canvas,
             please refresh and try again. If this error persists,
-            please contact ***REMOVED***.'''
-        )
+            please contact ***REMOVED***.''')
 
     return render_template(
         "main_template.html",
@@ -326,26 +307,17 @@ def xml():
     Returns the lti.xml file for the app.
     XML can be built at https://www.eduappcenter.com/
     """
-    try:
-        return Response(render_template(
-            'test.xml', url=request.url_root), mimetype='application/xml'
-        )
-    except:
-        app.logger.error("\nNo XML file.")
-
-        return render_template(
-            'error.html', msg='''No XML file. Please refresh
-            and try again. If this error persists,
-            please contact ***REMOVED***.'''
-        )
+    return Response(render_template(
+        'test.xml', url=request.url_root), mimetype='application/xml'
+    )
 
 # OAuth login
 # Redirect URI
 
 
 @app.route('/oauthlogin', methods=['POST', 'GET'])
-# @check_valid_user
-def oauth_login():
+@lti(error=error, request='session', role='staff', app=app)
+def oauth_login(lti=lti):
 
     code = request.args.get('code')
     payload = {
@@ -358,28 +330,19 @@ def oauth_login():
     r = requests.post(settings.BASE_URL+'login/oauth2/token', data=payload)
 
     if r.status_code == 500:
-        # Canceled oauth or server error
-        if 'canvas_user_id' in session and 'course_id' in session:
-            app.logger.error(
-                '''Status code 500 from oauth, authentication error\n
-                User ID: {0} Course: {1} \n {2} \n Request headers: {3}'''.format(
-                    session['canvas_user_id'], session['course_id'],
-                    r.url, r.headers
-                )
-            )
-        else:
-            app.logger.error(
-                '''Status code 500 from oauth, authentication error\n
-                User ID: None Course: None \n {0} \n Request headers: {1}'''.format(
-                    r.url, r.headers
-                )
-            )
+        # Canceled oauth (clicked cancel instead of Authorize) or server error
 
-        msg = '''Authentication error,
+        app.logger.error(
+            '''Status code 500 from oauth, authentication error\n
+            User ID: None Course: None \n {0} \n Request headers: {1} {2}'''.format(
+                r.url, r.headers, session
+            )
+        )
+
+        return return_error('''Authentication error,
             please refresh and try again. If this error persists,
-            please contact ***REMOVED***.'''
-        return render_template("error.html", msg=msg)
-    print r.json()
+            please contact ***REMOVED***.''')
+
     if 'access_token' in r.json():
         session['api_key'] = r.json()['access_token']
 
@@ -389,21 +352,36 @@ def oauth_login():
         if 'expires_in' in r.json():
             # expires in seconds
             # add the seconds to current time for expiration time
-            current_time = datetime.now()
-            expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
+            current_time = int(time.time())
+            expires_in = current_time + r.json()['expires_in']
             session['expires_in'] = expires_in
-        try:
 
-            # add to db
+            # check if user is in the db
             user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
-            if user:
-                print "trying to update old user"
+            if user is not None:
+
+                # update the current user's expiration time in db
                 user.refresh_token = session['refresh_token']
                 user.expires_in = session['expires_in']
                 db.session.add(user)
                 db.session.commit()
+
+                # check that the expires_in time got updated
+                check_expiration = Users.query.filter_by(user_id=int(session['canvas_user_id']))
+
+                # compare what was saved to the old session
+                # if it didn't update, error
+                if check_expiration.expires_in == long(session['expires_in']):
+                    return redirect(url_for('index'))
+                else:
+                    app.logger.error(
+                        '''Error in updating user's expiration time in the db:\n {}'''.format(session)
+                    )
+                    return return_error('''Authentication error,
+                        please refresh and try again. If this error persists,
+                        please contact ***REMOVED***.''')
             else:
-                print "trying to add new user"
+                # add new user to db
                 new_user = Users(
                     session['canvas_user_id'],
                     session['refresh_token'],
@@ -411,172 +389,169 @@ def oauth_login():
                 )
                 db.session.add(new_user)
                 db.session.commit()
-            return redirect(url_for('index'))
 
-        except Exception as e:
-            print traceback.print_exc()
+                # check that the user got added
+                check_user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
+
+                if check_user is None:
+                    # Error in adding user to the DB
+                    app.logger.error(
+                        "Error in adding user to db: \n {}".format(session)
+                    )
+                    return return_error('''Authentication error,
+                        please refresh and try again. If this error persists,
+                        please contact ***REMOVED***.''')
+                else:
+                    return redirect(url_for('index'))
+
+            # got beyond if/else
+            # error in adding or updating db
+
             app.logger.error(
-                "Error in adding new user to db: \n {0} {1} {2} {3} ".format(
-                    e, session['canvas_user_id'], session['refresh_token'], session['expires_in']
-                )
+                "Error in adding or updating user to db: \n {}".format(session)
             )
-            msg = '''Authentication error,
-            please refresh and try again. If this error persists,
-            please contact ***REMOVED***.'''
-            return render_template("error.html", msg=msg)
+            return return_error('''Authentication error,
+                please refresh and try again. If this error persists,
+                please contact ***REMOVED***.''')
 
     app.logger.warning(
-        "Some other error\n User: {0} Course: {1} \n {2} \n Request headers: {3} \n {4}".format(
+        '''Error wtih checking access_token in r.json() block\n
+        User: {0} Course: {1} \n {2} \n Request headers: {3} \n r.json(): {4}'''.format(
             session['canvas_user_id'], session['course_id'],
             r.url, r.headers, r.json()
         )
     )
-    msg = '''Authentication error,
-        please refresh and try again. If this error persists,
-        please contact ***REMOVED***.'''
-    return render_template("error.html", msg=msg)
+    return return_error('''Authentication error, please refresh and try again. If this error persists,
+        please contact ***REMOVED***.''')
 
 
 # Checking the user in the db
 @app.route('/auth', methods=['POST', 'GET'])
+@lti(error=error, request='initial', role='staff', app=app)
 @check_valid_user
-def auth():
+def auth(lti=lti):
 
-    # if they aren't in our DB/their token is expired or invalid
-    try:
-        # Try to grab the user
-        user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
+    # Try to grab the user
+    user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
 
+    # Found a user
+    if user is not None:
+        # Get the expiration date
+        expiration_date = user.expires_in
+        refresh_token = user.refresh_key
 
-        # Found a user
-        if user:
-            # Get the expiration date
-            expiration_date = user.expires_in
-            refresh_token = user.refresh_key
+        # If expired or no api_key
+        if int(time.time()) > expiration_date or 'api_key' not in session:
+            readable_time = time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(user.expires_in))
+            app.logger.info(
+                '''Expired refresh token or api_key not in session\n
+                User: {0} \n Expiration date in db: {1}
+                Readable expires_in: {2}'''.format(user.user_id, user.expires_in, readable_time)
+            )
+            payload = {
+                'grant_type': 'refresh_token',
+                'client_id': settings.oauth2_id,
+                'redirect_uri': settings.oauth2_uri,
+                'client_secret': settings.oauth2_key,
+                'refresh_token': refresh_token
+            }
+            r = requests.post(settings.BASE_URL+'login/oauth2/token', data=payload)
 
-            # If expired or no api_key
-            if datetime.now() > expiration_date or 'api_key' not in session:
-                print datetime.now()
-                print expiration_date
-                print "got here"
-
+            # We got an access token and can proceed
+            if 'access_token' in r.json():
+                # Set the api key
+                session['api_key'] = r.json()['access_token']
                 app.logger.info(
-                    '''Expired refresh token or api_key not in session\n
-                    User: {0} \n Expiration date in db: {1}'''.format(user.user_id, user.expires_in)
+                    "New access token created\n User: {0}".format(user.user_id)
                 )
-                payload = {
-                    'grant_type': 'refresh_token',
-                    'client_id': settings.oauth2_id,
-                    'redirect_uri': settings.oauth2_uri,
-                    'client_secret': settings.oauth2_key,
-                    'refresh_token': refresh_token
-                }
-                r = requests.post(settings.BASE_URL+'login/oauth2/token', data=payload)
 
-                # We got an access token and can proceed
-                if 'access_token' in r.json():
-                    # Set the api key
-                    session['api_key'] = r.json()['access_token']
-                    app.logger.info(
-                        "New access token created\n User: {0}".format(user.user_id)
-                    )
+                if 'refresh_token' in r.json():
+                    session['refresh_token'] = r.json()['refresh_token']
 
-                    if 'refresh_token' in r.json():
-                        session['refresh_token'] = r.json()['refresh_token']
+                if 'expires_in' in r.json():
+                    # expires in seconds
+                    # add the seconds to current time for expiration time
+                    # current_time = datetime.now()
+                    current_time = int(time.time())
+                    expires_in = current_time + r.json()['expires_in']
+                    session['expires_in'] = expires_in
 
-                    if 'expires_in' in r.json():
-                        # expires in seconds
-                        # add the seconds to current time for expiration time
-                        current_time = datetime.now()
-                        expires_in = current_time + timedelta(seconds=r.json()['expires_in'])
-                        session['expires_in'] = expires_in
-                    try:
-                        # Try to save the new expiration date
-                        user.expires_in = session['expires_in']
-                        db.session.commit()
-                    except Exception as e:
-                        # log error, couldn't save new expiration date
+                    # Try to save the new expiration date
+                    user.expires_in = session['expires_in']
+                    db.session.commit()
+
+                    # check that the expiration date updated
+                    check_expiration = Users.query.filter_by(
+                        user_id=int(session['canvas_user_id'])).first()
+
+                    # compare what was saved to the old session
+                    # if it didn't update, error
+
+                    if check_expiration.expires_in == long(session['expires_in']):
+                        return redirect(url_for('index'))
+                    else:
                         app.logger.error(
-                            '''Error in updating user in the db:\n {0} \n user ID {1} \n
-                            Refresh token {2} \n Oauth expiration in session {3}'''.format(
-                                session['canvas_user_id'],
-                                session['refresh_token'],
-                                session['expires_in']
+                            '''Error in updating user's expiration time
+                             in the db:\n session: {} Readable timestamp: {}'''.format(
+                                session, readable_time
                             )
                         )
-                        msg = '''Authentication error,
+                        return return_error('''Authentication error,
                             please refresh and try again. If this error persists,
-                            please contact ***REMOVED***.'''
-                        return render_template("error.html", msg=msg)
-
-                    return redirect(url_for('index'))
-                else:
-                    # weird response from trying to use the refresh token
-                    app.logger.info(
-                        '''Access token not in json.
-                        Bad api key or refresh token? {0} {1} {2} \n {3} {4}'''.format(
-                            r.status_code, session['canvas_user_id'],
-                            session['course_id'], payload, r.url
-                        )
-                    )
-                    msg = '''Authentication error,
-                        please refresh and try again. If this error persists,
-                        please contact ***REMOVED***.'''
-                    return render_template("error.html", msg=msg)
+                            please contact ***REMOVED***.''')
             else:
-                # good to go!
-                # test the api key
-                auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-                r = requests.get(settings.API_URL + 'users/%s/profile' %
-                                 (session['canvas_user_id']), headers=auth_header)
-                # check for WWW-Authenticate
-                # https://canvas.instructure.com/doc/api/file.oauth.html
-                if 'WWW-Authenticate' not in r.headers and r.status_code != 401:
-                    return redirect(url_for('index'))
-                else:
-                    app.logger.info(
-                        '''Reauthenticating: \n User ID: {0} \n Course: {1}
-                        Refresh token: {2} \n
-                        Oauth expiration in session: {3} \n {4} \n {5} \n {6}'''.format(
-                            session['canvas_user_id'], session['course_id'],
-                            session['refresh_token'], session['expires_in'],
-                            r.status_code, r.url, r.headers
-                        )
-                    )
-                    return redirect(
-                        settings.BASE_URL+'login/oauth2/auth?client_id=' +
-                        settings.oauth2_id + '&response_type=code&redirect_uri=' +
-                        settings.oauth2_uri
-                    )
-                app.logger.error(
-                    '''Some other error: \n
-                    User ID: {0}  Course: {1} \n Refresh token: {2} \n
-                    Oauth expiration in session: {3} \n {4} \n {5} \n {6} {7}'''.format(
-                        session['canvas_user_id'], session['course_id'],
-                        session['refresh_token'], session['expires_in'], r.status_code,
-                        r.url, r.headers, r.json()
+                # weird response from trying to use the refresh token
+                app.logger.info(
+                    '''Access token not in json.
+                    Bad api key or refresh token? {0} {1} {2} \n {3} {4}'''.format(
+                        r.status_code, session['canvas_user_id'],
+                        session['course_id'], payload, r.url
                     )
                 )
-                msg = '''Authentication error,
+                return return_error('''Authentication error,
                     please refresh and try again. If this error persists,
-                    please contact ***REMOVED***.'''
-                return render_template("error.html", msg=msg)
+                    please contact ***REMOVED***.''')
         else:
-            # not in db, go go oauth!!
-            app.logger.info(
-                "Person doesn't have an entry in db, redirecting to oauth: {0}".format(
-                    session['canvas_user_id']
+            # good to go!
+            # test the api key
+            auth_header = {'Authorization': 'Bearer ' + session['api_key']}
+            r = requests.get(settings.API_URL + 'users/%s/profile' %
+                             (session['canvas_user_id']), headers=auth_header)
+            # check for WWW-Authenticate
+            # https://canvas.instructure.com/doc/api/file.oauth.html
+            if 'WWW-Authenticate' not in r.headers and r.status_code != 401:
+                return redirect(url_for('index'))
+            else:
+                app.logger.info(
+                    '''Reauthenticating \nSession: {}
+                    Status code: {}
+                    URL: {}
+                    headers: {}'''.format(
+                        session, r.status_code, r.url, r.headers
+                    )
+                )
+                return redirect(
+                    settings.BASE_URL+'login/oauth2/auth?client_id=' +
+                    settings.oauth2_id + '&response_type=code&redirect_uri=' +
+                    settings.oauth2_uri
+                )
+            app.logger.error(
+                '''Some other error: \n
+                Session: {}
+                Status code: {} URL: {}
+                Headers: {}'''.format(
+                    session, r.status_code,
+                    r.url, r.headers, r.json()
                 )
             )
-            return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
-                            '&response_type=code&redirect_uri='+settings.oauth2_uri)
-    except Exception as e:
-        print e
-        print traceback.print_exc()
-        # they aren't in the db, so send em to the oauth stuff
+            return return_error('''Authentication error,
+                please refresh and try again. If this error persists,
+                please contact ***REMOVED***.''')
+    else:
+        # not in db, go go oauth!!
         app.logger.info(
-            "Error getting a person from the db, reuathenticating: {0} {1}".format(
-                session['canvas_user_id'], e
+            "Person doesn't have an entry in db, redirecting to oauth: {0}".format(
+                session['canvas_user_id']
             )
         )
         return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
@@ -587,6 +562,5 @@ def auth():
             session['course_id']
         )
     )
-    msg = '''Authentication error, please refresh and try again. If this error persists,
-        please contact ***REMOVED***.'''
-    return render_template("error.html", msg=msg)
+    return return_error('''Authentication error, please refresh and try again. If this error persists,
+        please contact ***REMOVED***.''')
