@@ -1,44 +1,37 @@
+from datetime import timedelta
+from functools import wraps
+import json
+import logging
+import os
+import time
+
 from flask import Flask, render_template, session, request, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
-from datetime import timedelta
 from pylti.flask import lti
-from functools import wraps
-import logging
-from logging.handlers import RotatingFileHandler
-from logging import Formatter
 import requests
-import json
+
 import settings
-import time
-import os
 
 app = Flask(__name__)
 app.config.from_object(settings.configClass)
 app.secret_key = settings.secret_key
 db = SQLAlchemy(app)
 
-# ============================================
 # Logging
-# ============================================
-
-handler = RotatingFileHandler(
+handler = logging.handlers.RotatingFileHandler(
     settings.ERROR_LOG,
     maxBytes=settings.LOG_MAX_BYTES,
     backupCount=settings.LOG_BACKUP_COUNT
 )
 handler.setLevel(logging.getLevelName(logging.INFO))
-handler.setFormatter(Formatter(
+handler.setFormatter(logging.Formatter(
     '%(asctime)s %(levelname)s: %(message)s '
     '[in %(pathname)s: %(lineno)d of %(funcName)s]'
 ))
 app.logger.addHandler(handler)
 
 
-# ============================================
 # DB Model
-# ============================================
-
-
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, unique=True)
@@ -53,11 +46,8 @@ class Users(db.Model):
     def __repr__(self):
         return '<User %r>' % self.user_id
 
-# ============================================
+
 # Utility Functions
-# ============================================
-
-
 @app.context_processor
 def utility_processor():
     def google_analytics():
@@ -68,9 +58,8 @@ def utility_processor():
 def return_error(msg):
     return render_template('error.html', msg=msg)
 
+
 # for the pylti decorator
-
-
 def error(exception=None):
     app.logger.error("PyLTI error: {}".format(exception))
     return return_error('''Authentication error,
@@ -139,11 +128,8 @@ def check_valid_user(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ============================================
+
 # Web Views / Routes
-# ============================================
-
-
 @app.route("/")
 @lti(error=error, role='staff', app=app)
 @check_valid_user
@@ -154,15 +140,15 @@ def index(lti=lti):
 
     # Test API key to see if they need to reauthenticate
     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-    r = requests.get(settings.API_URL+'users/self', headers=auth_header)
+    r = requests.get(settings.API_URL + 'users/self', headers=auth_header)
     if 'WWW-Authenticate' in r.headers:
         # reroll oauth
         app.logger.info(
             '''WWW-Authenticate found in headers, or status code was 401.
             Re-rolling oauth.\n {0} \n {1} \n {1}'''.format(r.status_code, r.headers, r.url)
         )
-        return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
-                        '&response_type=code&redirect_uri='+settings.oauth2_uri)
+        return redirect(settings.BASE_URL + 'login/oauth2/auth?client_id=' + settings.oauth2_id +
+                        '&response_type=code&redirect_uri=' + settings.oauth2_uri)
 
     if 'WWW-Authenticate' not in r.headers and r.status_code == 401:
         # not authorized
@@ -180,13 +166,13 @@ def index(lti=lti):
             )
         )
         return redirect(
-            settings.BASE_URL+'login/oauth2/auth?client_id=' +
-            settings.oauth2_id + '&response_type=code&redirect_uri='+settings.oauth2_uri
+            settings.BASE_URL + 'login/oauth2/auth?client_id=' +
+            settings.oauth2_id + '&response_type=code&redirect_uri=' + settings.oauth2_uri
         )
 
     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
     r = requests.get(
-        settings.API_URL+'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
+        settings.API_URL + 'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
             session['course_id']
         ), headers=auth_header
     )
@@ -311,10 +297,9 @@ def xml():
         'test.xml', url=request.url_root), mimetype='application/xml'
     )
 
+
 # OAuth login
 # Redirect URI
-
-
 @app.route('/oauthlogin', methods=['POST', 'GET'])
 @lti(error=error, request='session', role='staff', app=app)
 def oauth_login(lti=lti):
@@ -327,7 +312,7 @@ def oauth_login(lti=lti):
         'client_secret': settings.oauth2_key,
         'code': code
     }
-    r = requests.post(settings.BASE_URL+'login/oauth2/token', data=payload)
+    r = requests.post(settings.BASE_URL + 'login/oauth2/token', data=payload)
 
     if r.status_code == 500:
         # Canceled oauth (clicked cancel instead of Authorize) or server error
@@ -531,7 +516,7 @@ def auth(lti=lti):
                     )
                 )
                 return redirect(
-                    settings.BASE_URL+'login/oauth2/auth?client_id=' +
+                    settings.BASE_URL + 'login/oauth2/auth?client_id=' +
                     settings.oauth2_id + '&response_type=code&redirect_uri=' +
                     settings.oauth2_uri
                 )
@@ -554,8 +539,8 @@ def auth(lti=lti):
                 session['canvas_user_id']
             )
         )
-        return redirect(settings.BASE_URL+'login/oauth2/auth?client_id='+settings.oauth2_id +
-                        '&response_type=code&redirect_uri='+settings.oauth2_uri)
+        return redirect(settings.BASE_URL + 'login/oauth2/auth?client_id=' + settings.oauth2_id +
+                        '&response_type=code&redirect_uri=' + settings.oauth2_uri)
     app.logger.warning(
         "Some other error, {0} {1}".format(
             session['canvas_user_id'],

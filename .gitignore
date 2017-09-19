@@ -2,9 +2,9 @@
 settings.py
 
 # system
-*.pyc
 *.DS_Store
+*.log
+*.pyc
 
 # virtual environment
 env/
-
