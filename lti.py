@@ -22,10 +22,10 @@ db = SQLAlchemy(app)
 # ============================================
 
 handler = RotatingFileHandler(
-            settings.ERROR_LOG,
-            maxBytes=settings.LOG_MAX_BYTES,
-            backupCount=settings.LOG_BACKUP_COUNT
-        )
+    settings.ERROR_LOG,
+    maxBytes=settings.LOG_MAX_BYTES,
+    backupCount=settings.LOG_BACKUP_COUNT
+)
 handler.setLevel(logging.getLevelName(logging.INFO))
 handler.setFormatter(Formatter(
     '%(asctime)s %(levelname)s: %(message)s '
