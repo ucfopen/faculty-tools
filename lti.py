@@ -1,7 +1,8 @@
 from datetime import timedelta
+from logging import Formatter, INFO
+from logging.handlers import RotatingFileHandler
 from functools import wraps
 import json
-import logging
 import os
 import time
 
@@ -18,13 +19,13 @@ app.secret_key = settings.secret_key
 db = SQLAlchemy(app)
 
 # Logging
-handler = logging.handlers.RotatingFileHandler(
+handler = RotatingFileHandler(
     settings.ERROR_LOG,
     maxBytes=settings.LOG_MAX_BYTES,
     backupCount=settings.LOG_BACKUP_COUNT
 )
-handler.setLevel(logging.getLevelName(logging.INFO))
-handler.setFormatter(logging.Formatter(
+handler.setLevel(INFO)
+handler.setFormatter(Formatter(
     '%(asctime)s %(levelname)s: %(message)s '
     '[in %(pathname)s: %(lineno)d of %(funcName)s]'
 ))
