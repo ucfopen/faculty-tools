@@ -8,3 +8,7 @@ settings.py
 
 # virtual environment
 env/
+
+# coverage
+.coverage
+/htmlcov
