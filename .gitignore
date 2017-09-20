@@ -6,6 +6,9 @@ settings.py
 *.log
 *.pyc
 
+# database files
+*.db
+
 # virtual environment
 env/
 
