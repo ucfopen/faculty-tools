@@ -330,7 +330,6 @@ def xml():
 @app.route('/oauthlogin', methods=['POST', 'GET'])
 @lti(error=error, request='session', role='staff', app=app)
 def oauth_login(lti=lti):
-
     code = request.args.get('code')
     payload = {
         'grant_type': 'authorization_code',
@@ -449,7 +448,6 @@ def oauth_login(lti=lti):
 @lti(error=error, request='initial', role='staff', app=app)
 @check_valid_user
 def auth(lti=lti):
-
     # Try to grab the user
     user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
 
