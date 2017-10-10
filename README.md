@@ -1,4 +1,4 @@
-# Documentation for Faculty Resources
+# Documentation for Faculty Tools
 
 ## Dev Key
 
