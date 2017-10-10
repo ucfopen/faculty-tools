@@ -292,10 +292,10 @@ def index(lti=lti):
                         'id': lti_id,
                         'sessionless_launch_url': sessionless_launch_url,
                         'desc': data['desc'],
-                        'heading': data['subheading'],
                         'screenshot': data['screenshot'],
                         'logo': data['logo'],
-                        'filter_by': data['filter_by']
+                        'filter_by': data['filter_by'],
+                        'is_launchable': data['is_launchable']
                     })
 
     else:
