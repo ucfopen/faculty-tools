@@ -115,6 +115,7 @@ h1 {
 .thumbnail {
   float: left;
   margin-right: 8px;
+  max-width: 75px;
 }
 
 .button_margin {
