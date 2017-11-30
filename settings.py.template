@@ -26,6 +26,7 @@ LOG_MAX_BYTES = 10000
 LOG_BACKUP_COUNT = 1
 ERROR_LOG = 'error.log'
 
+
 def select_db(x):
     return {
         'DevelopmentConfig': 'sqlite:///test.db',
@@ -34,8 +35,9 @@ def select_db(x):
         'TestingConfig': 'sqlite:///test.db'
     }.get(x, 'sqlite:///test2.db')
 
+
 configClass = 'config.DevelopmentConfig'
 
 whitelist = 'whitelist.json'
 
-GOOGLE_ANALYTICS=''
+GOOGLE_ANALYTICS = ''
