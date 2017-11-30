@@ -24,7 +24,7 @@ oauth2_uri = ''
 
 LOG_MAX_BYTES = 10000
 LOG_BACKUP_COUNT = 1
-ERROR_LOG = 'error.log'
+ERROR_LOG = 'logs/faculty-tools.log'
 
 
 def select_db(x):
