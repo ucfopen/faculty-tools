@@ -8,16 +8,17 @@
 				{% for lti in lti_batch %}
 				<div class="card"  data-filter="{{lti.filter_by}}">
 					<h3 class="card-title text-center">{{lti.name}}</h3>
-					<div class="container text-center">
-					<img class="card-img-top img-fluid margin-10" src={{ url_for('static', filename='img/'+lti.screenshot) }} alt="Screenshot" />
-					</div>
 
 					<div class="card-body">
 						<img class="img-fluid thumbnail" src={{ url_for('static', filename='img/logos/'+lti.logo) }} alt="{{lti.name}} logo" />
 						<p class="card-text">{{lti.desc}}</p>
 						<br style="clear: both;" />
 
-						<div class="buttons" style="vertical-align: bottom;">
+						<div class="text-center">
+							<img class="card-img-top img-fluid margin-10" src={{ url_for('static', filename='img/'+lti.screenshot) }} alt="Screenshot" style="border: 1px solid black; border-radius: 4px;" />
+						</div>
+
+						<div class="buttons">
 							{% if lti.is_launchable %}
 							<p class="text-center pull-left"><a class="btn btn-success" href="{{lti.sessionless_launch_url}}"><i class="fa fa-play" aria-hidden="true"></i> &nbsp; Launch</a></p>
 							{% endif %}
