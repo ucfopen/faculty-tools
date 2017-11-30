@@ -1,6 +1,0 @@
-config.py
-settings.py
-*.db
-errorland.log*
-venv/
-.DS_Store

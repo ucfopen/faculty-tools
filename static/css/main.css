@@ -90,7 +90,7 @@ h1 {
   font-size: 19px; 
   font-weight: bold;
   /* temp vertical centering fix */
-  padding-top: 30%;
+  padding-top: 19%;
 }
 
 .card-deck {
@@ -115,6 +115,7 @@ h1 {
 .thumbnail {
   float: left;
   margin-right: 8px;
+  max-width: 75px;
 }
 
 .button_margin {

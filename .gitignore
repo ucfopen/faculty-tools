@@ -1,13 +1,17 @@
-
 # config/settings
-
-faculty_resources/config.py
+settings.py
 
 # system
-*.pyc
 *.DS_Store
+*.log
+*.pyc
+
+# database files
+*.db
 
 # virtual environment
-venv/
 env/
-*.pyc
+
+# coverage
+.coverage
+/htmlcov
