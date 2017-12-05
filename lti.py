@@ -216,96 +216,98 @@ def index(lti=lti):
             'If this error persists, please contact ***REMOVED***.'
         ))
 
-    if json_data is not None:
-        # check if the LTI is in the whitelist
-        for data in json_data:
-            if data['name'] not in str(ltis_json_list):
-                continue
-
-            # get the id from the lti
-            for lti_obj in ltis_json_list:
-                if lti_obj['name'] == data['name'] and 'none' not in data['filter_by']:
-                    sessionless_launch_url = None
-                    lti_id = lti_obj['id']
-
-                    if lti_obj.get('course_navigation'):
-                        auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-                        # get sessionless launch url for things that come from course nav
-                        url = (
-                            '{0}courses/{1}/external_tools/sessionless_launch?id={2}'
-                            '&launch_type=course_navigation&access_token={3}'
-                        )
-                        r = requests.get(
-                            url.format(
-                                settings.API_URL,
-                                session['course_id'],
-                                lti_id,
-                                session['api_key']
-                            ),
-                            headers=auth_header
-                        )
-                        if r.status_code >= 400:
-                            app.logger.error(
-                                (
-                                    'Bad response while getting a sessionless '
-                                    'launch url:\n {0} {1}\n LTI: {2} \n'
-                                ).format(
-                                    r.status_code, r.url, lti_obj
-                                )
-                            )
-                            return return_error((
-                                'Error in a response from Canvas, please '
-                                'refresh and try again. If this error persists, '
-                                'please contact ***REMOVED***.'
-                            ))
-                        else:
-                            sessionless_launch_url = r.json()['url']
-
-                    if sessionless_launch_url is None:
-                        auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-                        # get sessionless launch url
-                        r = requests.get(
-                            settings.API_URL +
-                            'courses/{0}/external_tools/sessionless_launch?id={1}'.format(
-                                session['course_id'], lti_id
-                            ), headers=auth_header
-                        )
-                        if r.status_code >= 400:
-                            app.logger.error(
-                                (
-                                    'Bad response while getting a sessionless '
-                                    'launch url:\n {0} {1}\n LTI: {2} \n'
-                                ).format(
-                                    r.status_code, r.url, lti_obj
-                                )
-                            )
-                            return return_error((
-                                'Error in a response from Canvas, please '
-                                'refresh and try again. If this error persists, '
-                                'please contact ***REMOVED***.'
-                            ))
-                        else:
-                            sessionless_launch_url = r.json()['url']
-
-                    lti_list.append({
-                        'name': data['name'],
-                        'id': lti_id,
-                        'sessionless_launch_url': sessionless_launch_url,
-                        'desc': data['desc'],
-                        'screenshot': data['screenshot'],
-                        'logo': data['logo'],
-                        'filter_by': data['filter_by'],
-                        'is_launchable': data['is_launchable']
-                    })
-
-    else:
+    if json_data is None:
         # this lti threw an exception when talking to Canvas
         app.logger.error(
-            'Canvas exception:\n {0} \n LTI: {1} \n LTI List: {2} \n'.format(lti_obj, lti_list))
+            'Canvas exception:\n LTI: {1} \n LTI List: {2} \n'.format(lti_obj, lti_list)
+        )
         return return_error((
             'Couldn\'t connect to Canvas, please refresh and try again. '
             'If this error persists, please contact ***REMOVED***.'
         ))
+
+    # check if the LTI is in the whitelist
+    for data in json_data:
+        if data['name'] not in str(ltis_json_list):
+            continue
+
+        # get the id from the lti
+        for lti_obj in ltis_json_list:
+            if lti_obj['name'] != data['name'] or 'none' in data['filter_by']:
+                continue
+
+            sessionless_launch_url = None
+            lti_id = lti_obj['id']
+
+            if 'course_navigation' in lti_obj:
+                auth_header = {'Authorization': 'Bearer ' + session['api_key']}
+                # get sessionless launch url for things that come from course nav
+                url = (
+                    '{0}courses/{1}/external_tools/sessionless_launch?id={2}'
+                    '&launch_type=course_navigation&access_token={3}'
+                )
+                r = requests.get(
+                    url.format(
+                        settings.API_URL,
+                        session['course_id'],
+                        lti_id,
+                        session['api_key']
+                    ),
+                    headers=auth_header
+                )
+                if r.status_code >= 400:
+                    app.logger.error(
+                        (
+                            'Bad response while getting a sessionless '
+                            'launch url:\n {0} {1}\n LTI: {2} \n'
+                        ).format(
+                            r.status_code, r.url, lti_obj
+                        )
+                    )
+                    return return_error((
+                        'Error in a response from Canvas, please '
+                        'refresh and try again. If this error persists, '
+                        'please contact ***REMOVED***.'
+                    ))
+                else:
+                    sessionless_launch_url = r.json()['url']
+
+            if sessionless_launch_url is None:
+                auth_header = {'Authorization': 'Bearer ' + session['api_key']}
+                # get sessionless launch url
+                r = requests.get(
+                    settings.API_URL +
+                    'courses/{0}/external_tools/sessionless_launch?id={1}'.format(
+                        session['course_id'], lti_id
+                    ), headers=auth_header
+                )
+                if r.status_code >= 400:
+                    app.logger.error(
+                        (
+                            'Bad response while getting a sessionless '
+                            'launch url:\n {0} {1}\n LTI: {2} \n'
+                        ).format(
+                            r.status_code, r.url, lti_obj
+                        )
+                    )
+                    return return_error((
+                        'Error in a response from Canvas, please '
+                        'refresh and try again. If this error persists, '
+                        'please contact ***REMOVED***.'
+                    ))
+                else:
+                    sessionless_launch_url = r.json()['url']
+
+            lti_list.append({
+                'name': data['name'],
+                'id': lti_id,
+                'sessionless_launch_url': sessionless_launch_url,
+                'desc': data['desc'],
+                'screenshot': data['screenshot'],
+                'logo': data['logo'],
+                'filter_by': data['filter_by'],
+                'is_launchable': data['is_launchable']
+            })
 
     return render_template(
         'main_template.html',
