@@ -239,64 +239,65 @@ def index(lti=lti):
             sessionless_launch_url = None
             lti_id = lti_obj['id']
 
-            if 'course_navigation' in lti_obj:
-                auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-                # get sessionless launch url for things that come from course nav
-                url = (
-                    '{0}courses/{1}/external_tools/sessionless_launch?id={2}'
-                    '&launch_type=course_navigation&access_token={3}'
-                )
-                r = requests.get(
-                    url.format(
-                        settings.API_URL,
-                        session['course_id'],
-                        lti_id,
-                        session['api_key']
-                    ),
-                    headers=auth_header
-                )
-                if r.status_code >= 400:
-                    app.logger.error(
-                        (
-                            'Bad response while getting a sessionless '
-                            'launch url:\n {0} {1}\n LTI: {2} \n'
-                        ).format(
-                            r.status_code, r.url, lti_obj
-                        )
+            if data['is_launchable']:
+                if 'course_navigation' in lti_obj:
+                    auth_header = {'Authorization': 'Bearer ' + session['api_key']}
+                    # get sessionless launch url for things that come from course nav
+                    url = (
+                        '{0}courses/{1}/external_tools/sessionless_launch?id={2}'
+                        '&launch_type=course_navigation&access_token={3}'
                     )
-                    return return_error((
-                        'Error in a response from Canvas, please '
-                        'refresh and try again. If this error persists, '
-                        'please contact ***REMOVED***.'
-                    ))
-                else:
-                    sessionless_launch_url = r.json()['url']
+                    r = requests.get(
+                        url.format(
+                            settings.API_URL,
+                            session['course_id'],
+                            lti_id,
+                            session['api_key']
+                        ),
+                        headers=auth_header
+                    )
+                    if r.status_code >= 400:
+                        app.logger.error(
+                            (
+                                'Bad response while getting a sessionless '
+                                'launch url:\n {0} {1}\n LTI: {2} \n'
+                            ).format(
+                                r.status_code, r.url, lti_obj
+                            )
+                        )
+                        return return_error((
+                            'Error in a response from Canvas, please '
+                            'refresh and try again. If this error persists, '
+                            'please contact ***REMOVED***.'
+                        ))
+                    else:
+                        sessionless_launch_url = r.json()['url']
 
-            if sessionless_launch_url is None:
-                auth_header = {'Authorization': 'Bearer ' + session['api_key']}
-                # get sessionless launch url
-                r = requests.get(
-                    settings.API_URL +
-                    'courses/{0}/external_tools/sessionless_launch?id={1}'.format(
-                        session['course_id'], lti_id
-                    ), headers=auth_header
-                )
-                if r.status_code >= 400:
-                    app.logger.error(
-                        (
-                            'Bad response while getting a sessionless '
-                            'launch url:\n {0} {1}\n LTI: {2} \n'
-                        ).format(
-                            r.status_code, r.url, lti_obj
-                        )
+                if sessionless_launch_url is None:
+                    auth_header = {'Authorization': 'Bearer ' + session['api_key']}
+                    # get sessionless launch url
+                    r = requests.get(
+                        settings.API_URL +
+                        'courses/{0}/external_tools/sessionless_launch?id={1}'.format(
+                            session['course_id'], lti_id
+                        ), headers=auth_header
                     )
-                    return return_error((
-                        'Error in a response from Canvas, please '
-                        'refresh and try again. If this error persists, '
-                        'please contact ***REMOVED***.'
-                    ))
-                else:
-                    sessionless_launch_url = r.json()['url']
+                    if r.status_code >= 400:
+                        app.logger.error(
+                            (
+                                'Bad response while getting a sessionless '
+                                'launch url:\n {0} {1}\n LTI: {2} \n'
+                            ).format(
+                                r.status_code, r.url, lti_obj
+                            )
+                        )
+                        return return_error((
+                            'Error in a response from Canvas, please '
+                            'refresh and try again. If this error persists, '
+                            'please contact ***REMOVED***.'
+                        ))
+                    else:
+                        sessionless_launch_url = r.json()['url']
 
             lti_list.append({
                 'name': data['name'],
