@@ -112,10 +112,8 @@ h1 {
   padding: 10px;
 }
 
-.thumbnail {
-  float: left;
-  margin-right: 8px;
-  max-width: 75px;
+.logo {
+  max-width: 100px;
 }
 
 .button_margin {

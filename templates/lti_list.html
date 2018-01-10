@@ -10,9 +10,10 @@
 					<h3 class="card-title text-center">{{lti.name}}</h3>
 
 					<div class="card-body">
-						<img class="img-fluid thumbnail" src={{ url_for('static', filename='img/logos/'+lti.logo) }} alt="{{lti.name}} logo" />
+						<div class="text-center">
+							<img class="logo text-center" src={{ url_for('static', filename='img/logos/'+lti.logo) }} alt="{{lti.name}} logo" />
+						</div>
 						<p class="card-text">{{lti.desc}}</p>
-						<br style="clear: both;" />
 
 						<div class="text-center">
 							<img class="card-img-top img-fluid margin-10" src={{ url_for('static', filename='img/'+lti.screenshot) }} alt="Screenshot" style="border: 1px solid black; border-radius: 4px;" />
@@ -23,7 +24,7 @@
 							<p class="text-center pull-left"><a class="btn btn-success" href="{{lti.sessionless_launch_url}}"><i class="fa fa-play" aria-hidden="true"></i> &nbsp; Launch</a></p>
 							{% endif %}
 
-							<p class="text-center pull-right"><a class="btn btn-primary" href="{{lti.sessionless_launch_url}}"><i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp; Learn More</a></p>
+							<p class="text-center pull-right"><a class="btn btn-primary" href="{{lti.docs_url}}" target="_blank"><i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp; Learn More</a></p>
 						</div>
 					</div>
 				</div>

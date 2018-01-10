@@ -306,7 +306,8 @@ def index(lti=lti):
                 'screenshot': data['screenshot'],
                 'logo': data['logo'],
                 'filter_by': data['filter_by'],
-                'is_launchable': data['is_launchable']
+                'is_launchable': data['is_launchable'],
+                'docs_url': data['docs_url']
             })
 
     return render_template(
