@@ -240,19 +240,18 @@ def index(lti=lti):
             lti_id = lti_obj['id']
 
             if data['is_launchable']:
-                if 'course_navigation' in lti_obj:
+                if lti_obj.get('course_navigation'):
                     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
                     # get sessionless launch url for things that come from course nav
                     url = (
                         '{0}courses/{1}/external_tools/sessionless_launch?id={2}'
-                        '&launch_type=course_navigation&access_token={3}'
+                        '&launch_type=course_navigation'
                     )
                     r = requests.get(
                         url.format(
                             settings.API_URL,
                             session['course_id'],
-                            lti_id,
-                            session['api_key']
+                            lti_id
                         ),
                         headers=auth_header
                     )
