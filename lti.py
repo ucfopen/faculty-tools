@@ -485,7 +485,7 @@ def auth(lti=lti):
 @app.route('/get_sessionless_url/<lti_id>/<launch_type>')
 @lti(error=error, role='staff', app=app)
 @check_valid_user
-def get_sessionless_url(lti=lti, lti_id, launch_type):
+def get_sessionless_url(lti=lti, lti_id=lti_id, launch_type=launch_type):
     sessionless_launch_url = None
     #lti_id = lti_id
 
