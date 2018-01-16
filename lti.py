@@ -204,7 +204,7 @@ def index(lti=lti):
             'If this error persists please contact ***REMOVED***.'
         ))
 
-    lti_list = get_lti_list()
+    lti_list = get_lti_list(ltis_json_list)
 
     return render_template(
         'main_template.html',
@@ -551,7 +551,8 @@ def get_sessionless_url(lti_id, launch_type, lti=lti):
 
 
 #utils
-def get_lti_list():
+def get_lti_list(ltis_json_list):
+    ltis_json_list = ltis_json_list
     lti_list = []
     json_data = None
     # load our white list
