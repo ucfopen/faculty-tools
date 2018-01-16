@@ -21,7 +21,7 @@
 
 						<div class="buttons">
 							{% if lti.is_launchable %}
-							<p class="text-center pull-left"><a class="btn btn-success" href="{{lti.sessionless_launch_url}}"><i class="fa fa-play" aria-hidden="true"></i> &nbsp; Launch</a></p>
+							<p class="text-center pull-left"><a id="{{lti.id}}" onclick="javascript:launch_lti({{lti.id}},'{{lti.lti_course_navigation}}');" class="btn btn-success" href="#"><i class="fa fa-play" aria-hidden="true"></i> &nbsp; Launch</a></p>
 							{% endif %}
 
 							<p class="text-center pull-right"><a class="btn btn-primary" href="{{lti.docs_url}}" target="_blank"><i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp; Learn More</a></p>

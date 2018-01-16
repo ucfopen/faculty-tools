@@ -586,9 +586,10 @@ def get_lti_list():
 
             sessionless_launch_url = None
             lti_id = lti_obj['id']
-
+            lti_course_navigation = False
             if data['is_launchable']:
                 if lti_obj.get('course_navigation'):
+                    lti_course_navigation = True
                     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
                     # get sessionless launch url for things that come from course nav
                     url = (
@@ -649,6 +650,7 @@ def get_lti_list():
             lti_list.append({
                 'name': data['name'],
                 'id': lti_id,
+                'lti_course_navigation': lti_course_navigation,
                 'sessionless_launch_url': sessionless_launch_url,
                 'desc': data['desc'],
                 'screenshot': data['screenshot'],

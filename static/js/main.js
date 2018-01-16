@@ -21,4 +21,15 @@ $(document).ready(function() {
         }
     });
 
+    var lti_launch = function(lti_id, lti_course_navigation) {
+        console.log('clicked');
+        var lid = "." + str(lti_id);
+        $(lid).href=
+        $.get( "/get_sessionless_url/" + lti_id + "/" + lti_course_navigation, function( data ) {
+          alert(data);
+          //$( ".result" ).html( data );
+          alert( "Load was performed." );
+        });
+    }
+
 });
