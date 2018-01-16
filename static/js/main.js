@@ -21,15 +21,33 @@ $(document).ready(function() {
         }
     });
 
-    var lti_launch = function(lti_id, lti_course_navigation) {
-        console.log('clicked');
-        var lid = "." + str(lti_id);
-        $(lid).href=
-        $.get( "/get_sessionless_url/" + lti_id + "/" + lti_course_navigation, function( data ) {
-          alert(data);
-          //$( ".result" ).html( data );
-          alert( "Load was performed." );
+
+    $( ".launch" ).each(function(index) {
+        $(this).on("click", function(){
+            var lti_id = $(this).attr('id');
+            var lti_course_navigation =   $(this).data('coursenav')
+            $.get( "/get_sessionless_url/" + lti_id + "/" + lti_course_navigation, function( data ) {
+              alert(data);
+            });
+
         });
-    }
+    });
+
+    // var lti_launch = function(lti_id, lti_course_navigation) {
+    //     console.log('clicked');
+    //     var lid = "." + str(lti_id);
+    //     $(lid).href=
+    //     $.get( "/get_sessionless_url/" + lti_id + "/" + lti_course_navigation, function( data ) {
+    //       alert(data);
+    //       //$( ".result" ).html( data );
+    //       alert( "Load was performed." );
+    //     });
+    // }
 
 });
+
+
+
+
+
+onclick="javascript:lti_launch({{lti.id}},'{{lti.lti_course_navigation}}');"
