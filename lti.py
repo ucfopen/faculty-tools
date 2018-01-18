@@ -481,13 +481,11 @@ def auth(lti=lti):
     ))
 
 
-
 @app.route('/get_sessionless_url/<lti_id>/<launch_type>')
 @lti(error=error, role='staff', app=app)
 @check_valid_user
 def get_sessionless_url(lti_id, launch_type, lti=lti):
     sessionless_launch_url = None
-    #lti_id = lti_id
 
     if launch_type == 'course_navigation':
         auth_header = {'Authorization': 'Bearer ' + session['api_key']}
@@ -550,9 +548,8 @@ def get_sessionless_url(lti_id, launch_type, lti=lti):
     return sessionless_launch_url
 
 
-#utils
+# utils
 def get_lti_list(ltis_json_list):
-    ltis_json_list = ltis_json_list
     lti_list = []
     json_data = None
     # load our white list
@@ -654,7 +651,7 @@ def get_lti_list(ltis_json_list):
                 'lti_course_navigation': lti_course_navigation,
                 'sessionless_launch_url': sessionless_launch_url,
                 'desc': data['desc'],
-                'screenshot': data['screenshot'],
+                'screenshot': 'screenshots/' + data['screenshot'],
                 'logo': data['logo'],
                 'filter_by': data['filter_by'],
                 'is_launchable': data['is_launchable'],

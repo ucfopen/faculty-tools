@@ -33,8 +33,4 @@ $(document).ready(function() {
 
         });
     });
-
-
 });
-
-
