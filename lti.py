@@ -190,6 +190,8 @@ def index(lti=lti):
     ltis_json_list = []
 
     if r.status_code == 200:
+        # TODO: this is basically a do-while. Restructure.
+        # CanvasAPI may work well here.
         for lti_obj in r.json():
             ltis_json_list.append(lti_obj)
         while 'next' in r.links:
@@ -481,13 +483,13 @@ def auth(lti=lti):
     ))
 
 
-@app.route('/get_sessionless_url/<lti_id>/<launch_type>')
+@app.route('/get_sessionless_url/<lti_id>/<is_course_nav>')
 @lti(error=error, role='staff', app=app)
 @check_valid_user
-def get_sessionless_url(lti_id, launch_type, lti=lti):
+def get_sessionless_url(lti_id, is_course_nav, lti=lti):
     sessionless_launch_url = None
 
-    if launch_type == 'course_navigation':
+    if is_course_nav == 'True':
         auth_header = {'Authorization': 'Bearer ' + session['api_key']}
         # get sessionless launch url for things that come from course nav
         url = (
