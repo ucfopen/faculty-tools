@@ -5,6 +5,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = settings.select_db('Config')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     PYLTI_CONFIG = settings.PYLTI_CONFIG
+    SESSION_COOKIE_NAME = 'ft_session'
 
 
 class BaseConfig(object):
