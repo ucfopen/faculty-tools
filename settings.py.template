@@ -10,6 +10,14 @@ PYLTI_CONFIG = {
         'key': {
             'secret': 'secret'
         }
+    },
+    'roles': {
+        'staff': [
+            'urn:lti:instrole:ims/lis/Administrator',
+            'Instructor',
+            'ContentDeveloper',
+            'urn:lti:role:ims/lis/TeachingAssistant'
+        ]
     }
 }
 
