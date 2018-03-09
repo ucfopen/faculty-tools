@@ -215,6 +215,69 @@ def index(lti=lti):
     )
 
 
+@app.route("/status", methods=['GET'])
+def status():
+    """
+    Runs smoke tests and reports status
+    """
+
+    status = {
+        'tool': 'Faculty Tools',
+        'checks': {
+            'index': False,
+            'xml': False,
+            'db': False,
+            'dev_key': False
+        },
+        'url': url_for('index', _external=True),
+        'base_url': settings.BASE_URL,
+        'debug': app.debug
+    }
+
+    # Check index
+    try:
+        response = requests.get(url_for('index', _external=True), verify=False)
+        index_check = response.status_code == 200 and 'UCF Faculty Tools' in response.text
+        status['checks']['index'] = index_check
+    except Exception as e:
+        app.logger.exception('Index check failed.')
+
+    # Check xml
+    try:
+        response = requests.get(url_for('xml', _external=True), verify=False)
+        status['checks']['xml'] = 'application/xml' in response.headers.get('Content-Type')
+    except Exception as e:
+        app.logger.exception('XML check failed.')
+
+    # Check DB connection
+    try:
+        db.session.query("1").all()
+        status['checks']['db'] = True
+    except Exception as e:
+        app.logger.exception('DB connection failed.')
+
+    # Check dev key?
+    try:
+        response = requests.get(
+            '{}login/oauth2/auth?client_id={}&response_type=code&redirect_uri={}'.format(
+                settings.BASE_URL,
+                settings.oauth2_id,
+                settings.oauth2_uri
+            )
+        )
+        status['checks']['dev_key'] = response.status_code == 200
+    except Exception as e:
+        app.logger.exception('Dev Key check failed.')
+
+    # Overall health check - if all checks are True
+    status['healthy'] = all(v is True for k, v in status['checks'].items())
+
+    return Response(
+        json.dumps(status),
+        mimetype='application/json'
+    )
+
+
 @app.route('/xml/', methods=['POST', 'GET'])
 def xml():
     """
