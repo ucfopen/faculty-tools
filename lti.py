@@ -206,11 +206,16 @@ def index(lti=lti):
             'If this error persists please contact ***REMOVED***.'
         ))
 
-    lti_list = get_lti_list(ltis_json_list)
+    # course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool")
+    # assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
+    # rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
 
     return render_template(
         'main_template.html',
         ltis=lti_list,
+        course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool"),
+        assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor"),
+        rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor"),
         course=session['course_id']
     )
 
@@ -614,7 +619,7 @@ def get_sessionless_url(lti_id, is_course_nav, lti=lti):
 
 
 # utils
-def get_lti_list(ltis_json_list):
+def get_lti_list(ltis_json_list, category):
     lti_list = []
     json_data = None
     # load our white list
@@ -644,7 +649,7 @@ def get_lti_list(ltis_json_list):
 
         # get the id from the lti
         for lti_obj in ltis_json_list:
-            if lti_obj['name'] != data['name'] or 'none' in data['filter_by']:
+            if lti_obj['name'] != data['name'] or 'none' in data['filter_by'] or category != lti_obj['category']:
                 continue
 
             sessionless_launch_url = None
@@ -720,7 +725,8 @@ def get_lti_list(ltis_json_list):
                 'logo': data['logo'],
                 'filter_by': data['filter_by'],
                 'is_launchable': data['is_launchable'],
-                'docs_url': data['docs_url']
+                'docs_url': data['docs_url'],
+                'category': data['category']
             })
 
     return lti_list
