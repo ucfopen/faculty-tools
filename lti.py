@@ -212,7 +212,7 @@ def index(lti=lti):
 
     return render_template(
         'main_template.html',
-        ltis=lti_list,
+        #ltis=lti_list,
         course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool"),
         assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor"),
         rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor"),
