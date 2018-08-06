@@ -68,10 +68,10 @@ h1 {
 
 .text-center {
   text-align: center;
-  min-height: 100px;
 }
 
 .image-height {
+  text-align: center;
   min-height: 100px;
 }
 
