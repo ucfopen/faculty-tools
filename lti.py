@@ -214,7 +214,7 @@ def index(lti=lti):
         'main_template.html',
         #ltis=lti_list,
         course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool"),
-        assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor"),
+        assignment_lti_list = get_lti_list(ltis_json_list, "Assignment Editor"),
         rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor"),
         course=session['course_id']
     )
