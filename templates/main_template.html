@@ -4,21 +4,43 @@
 <div class="container">
 	<!-- grid time -->
 	<!-- first row -->
-	<div class="row">
+	
+	<!-- 	<div class="row">
 		<div class="col-md-8 ml-auto mr-auto">
 			<h2 class="text-center" id="all_tools">All tools:</h2>
 			<hr />
 		</div>
-	</div>
+	</div> -->
 
+
+	<div class="row">
+		<div class="col-md-8 ml-auto mr-auto">
+			<h2 class="text-center" id="all_tools">Course Tools:</h2>
+			<hr />
+		</div>
+	</div>
 
     {% with ltis=course_tool_lti_list %}
         {% include 'lti_list.html' %}
     {% endwith %}
+
+    <div class="row">
+		<div class="col-md-8 ml-auto mr-auto">
+			<h2 class="text-center" id="all_tools">Assignment Tools:</h2>
+			<hr />
+		</div>
+	</div>
 	
 	{% with ltis=assignment_lti_list %}
         {% include 'lti_list.html' %}
     {% endwith %}
+
+    <div class="row">
+		<div class="col-md-8 ml-auto mr-auto">
+			<h2 class="text-center" id="all_tools">Rich Content Editor Tools:</h2>
+			<hr />
+		</div>
+	</div>
     
     {% with ltis=rce_lti_list %}
         {% include 'lti_list.html' %}
