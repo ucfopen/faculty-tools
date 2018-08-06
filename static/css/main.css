@@ -72,7 +72,9 @@ h1 {
 
 .image-height {
   text-align: center;
-  min-height: 100px;
+  /*min-height: 100px;*/
+  margin-top: -10px;
+  margin-bottom: 10px;
 }
 
 .text-right {
