@@ -10,9 +10,12 @@
 					<h3 class="card-title text-center">{{lti.name}}</h3>
 
 					<div class="card-body">
-						<div class="text-center">
-							<img class="logo text-center" src={{ url_for('static', filename='img/logos/'+lti.logo) }} alt="{{lti.name}} logo" />
+						<div class="image-height">
+							<div class="text-center">
+								<img class="logo text-center" src={{ url_for('static', filename='img/logos/'+lti.logo) }} alt="{{lti.name}} logo" />
+							</div>
 						</div>
+						
 						<p class="card-text">{{lti.desc}}</p>
 
 						<div class="text-center">
