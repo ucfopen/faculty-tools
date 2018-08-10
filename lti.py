@@ -337,6 +337,7 @@ def oauth_login(lti=lti):
             expires_in = current_time + r.json()['expires_in']
             session['expires_in'] = expires_in
 
+
             # check if user is in the db
             user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
             if user is not None:
@@ -347,7 +348,8 @@ def oauth_login(lti=lti):
                 db.session.commit()
 
                 # check that the expires_in time got updated
-                check_expiration = Users.query.filter_by(user_id=int(session['canvas_user_id']))
+                check_expiration = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
+
 
                 # compare what was saved to the old session
                 # if it didn't update, error
