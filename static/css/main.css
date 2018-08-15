@@ -12,12 +12,13 @@ p {
 }
 
 #banner {
-  background-color: #242424; 
-  padding-top: 20px;
+  background-color: #242424;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .intro {
-  background-color: #f4f4f4; 
+  background-color: #f4f4f4;
   border-bottom: 2px solid #dbdbdb;
 }
 
@@ -38,7 +39,7 @@ h1 {
 }
 
 #intro-blurb {
-  margin-bottom: 20px;
+  margin-top: 15px;
 }
 
 #intro-blurb p {
@@ -47,7 +48,7 @@ h1 {
   border: #686868;
   border-style: solid;
   border-width: 1px;
-  border-radius: 5px; 
+  border-radius: 5px;
   font-size: 12px;
 }
 
@@ -94,7 +95,7 @@ h1 {
 }
 
 .like_to {
-  font-size: 19px; 
+  font-size: 19px;
   font-weight: bold;
   /* temp vertical centering fix */
   padding-top: 19%;
@@ -109,6 +110,22 @@ h1 {
   border: 3px solid #ffeeae;
   box-shadow: 0px 2px 1px rgba(220,220,220,1);
   padding: 0;
+  text-align: center;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 4rem;
+}
+
+.card-img-top-container {
+  margin-top: auto;
+}
+
+.card-img-top {
+  border: 1px solid rgb(247, 216, 100);
+  border-radius: 4px;
 }
 
 .card-title {
@@ -117,6 +134,13 @@ h1 {
   font-size: 18px;
   font-weight: bold;
   padding: 10px;
+}
+
+.card .buttons {
+  position: absolute;
+  bottom: 1rem;
+  left: 1.25rem;
+  right: 1.25rem;
 }
 
 .logo {
