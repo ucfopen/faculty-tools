@@ -17,6 +17,10 @@ p {
   padding-bottom: 10px;
 }
 
+#banner .container {
+  position: relative;
+}
+
 .intro {
   background-color: #f4f4f4;
   border-bottom: 2px solid #dbdbdb;
@@ -39,7 +43,12 @@ h1 {
 }
 
 #intro-blurb {
-  margin-top: 15px;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  width: 155px;
+  transform: translate(0, -50%);
+  background-color: #242424;
 }
 
 #intro-blurb p {
@@ -72,10 +81,18 @@ h1 {
 }
 
 .image-height {
+  position: relative;
   text-align: center;
-  /*min-height: 100px;*/
+  min-height: 100px;
   margin-top: -10px;
   margin-bottom: 10px;
+}
+
+.image-height img {
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  position: absolute;
 }
 
 .text-right {
@@ -101,22 +118,16 @@ h1 {
   padding-top: 19%;
 }
 
-.card-deck {
-  margin-bottom: 15px;
-}
-
 .card {
   background: #fffdf8;
   border: 3px solid #ffeeae;
   box-shadow: 0px 2px 1px rgba(220,220,220,1);
   padding: 0;
-  text-align: center;
 }
 
 .card-body {
   display: flex;
   flex-direction: column;
-  padding-bottom: 4rem;
 }
 
 .card-img-top-container {
@@ -136,11 +147,12 @@ h1 {
   padding: 10px;
 }
 
-.card .buttons {
-  position: absolute;
-  bottom: 1rem;
-  left: 1.25rem;
-  right: 1.25rem;
+.card .buttons > p {
+  margin-top: 1rem;
+}
+
+.card .buttons .fa-info-circle {
+  margin-right: 0.5em;
 }
 
 .logo {
@@ -188,7 +200,6 @@ h1 {
  padding: 9px;
  border-radius: 5px;
  font-size: 18px;
- /* margin-left: 35px; */
 }
 
 #pre_footer {
@@ -213,4 +224,20 @@ h1 {
   margin-top: 30px;
   min-height: 300px;
 }
-/*# sourceMappingURL=main.css.map */
+
+@media (min-width: 576px) {
+  .card-deck .card {
+    flex: none;
+    display: block !important;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  .card-deck .card {
+    flex: 1 0 0%;
+    display: flex !important;
+    width: inherit;
+  }
+}

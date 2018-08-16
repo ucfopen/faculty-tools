@@ -2,7 +2,7 @@
 {% if ltis|length > 0 %}
 	{% for lti_batch in ltis|batch(3) %}
 	<div class="row">
-		<div class="col-md-{{ lti_batch|length * 4 }}">
+		<div class="col-md-{{ lti_batch|length * 4 }} col-sm-2">
 		<div class="card-deck-wrapper">
 			<div class="card-deck">
 				{% for lti in lti_batch %}
@@ -23,13 +23,13 @@
 						</div>
 
 						<div class="buttons">
-							<p class="text-center pull-left"><a class="btn btn-primary" href="{{lti.docs_url}}" ga-on="click" ga-event-category="{{lti.name}}_learn_more" ga-event-action="click" ga-event-label="{{course}}" target="_blank"><i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp; Learn More</a></p>
+							<p class="text-center float-xs-none float-sm-left float-md-none float-lg-left"><a class="btn btn-primary btn-outline-primary" href="{{lti.docs_url}}" ga-on="click" ga-event-category="{{lti.name}}_learn_more" ga-event-action="click" ga-event-label="{{course}}" target="_blank"><i class="fa fa-info-circle" aria-hidden="true"></i>Learn More</a></p>
 
 							{% if lti.is_launchable %}
-							<p class="text-center pull-right">
+							<p class="text-center float-xs-none float-sm-right float-md-none float-lg-right">
 								<a id="{{lti.id}}" ga-on="click" ga-event-category="{{lti.name}}_launch" ga-event-action="click" ga-event-label="{{course}}"
 								 class="btn btn-success launch" data-coursenav="{{lti.lti_course_navigation}}" href="#">
-									<i class="fa fa-play" aria-hidden="true"></i> &nbsp; Launch</a>
+									<i class="fa fa-play" aria-hidden="true"></i>Launch</a>
 							</p>
 							{% endif %}
 						</div>
