@@ -2,7 +2,7 @@
 {% if ltis|length > 0 %}
 	{% for lti_batch in ltis|batch(3) %}
 	<div class="row">
-		<div class="col-md-{{ lti_batch|length * 4 }} col-sm-2">
+		<div class="col-md-{{ lti_batch|length * 4 }}">
 		<div class="card-deck-wrapper">
 			<div class="card-deck">
 				{% for lti in lti_batch %}
