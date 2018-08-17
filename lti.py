@@ -719,6 +719,7 @@ def get_lti_list(ltis_json_list, category):
                         sessionless_launch_url = r.json()['url']
 
             lti_list.append({
+                'display_name': data['display_name'],
                 'name': data['name'],
                 'id': lti_id,
                 'lti_course_navigation': lti_course_navigation,
