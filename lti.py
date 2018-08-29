@@ -651,7 +651,7 @@ def get_lti_list(ltis_json_list, category):
 
         # get the id from the lti
         for lti_obj in ltis_json_list:
-            print lti_obj
+            #print lti_obj
             if lti_obj['name'] != data['name'] or 'none' in data['filter_by'] or category != data['category']:
                 continue
 
