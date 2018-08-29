@@ -337,7 +337,6 @@ def oauth_login(lti=lti):
             expires_in = current_time + r.json()['expires_in']
             session['expires_in'] = expires_in
 
-
             # check if user is in the db
             user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
             if user is not None:
@@ -348,8 +347,9 @@ def oauth_login(lti=lti):
                 db.session.commit()
 
                 # check that the expires_in time got updated
-                check_expiration = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
-
+                check_expiration = Users.query.filter_by(
+                    user_id=int(session['canvas_user_id'])
+                ).first()
 
                 # compare what was saved to the old session
                 # if it didn't update, error
@@ -580,7 +580,7 @@ def get_sessionless_url(lti_id, is_course_nav, lti=lti):
                     'Bad response while getting a sessionless '
                     'launch url:\n {0} {1}\n LTI: {2} \n'
                 ).format(
-                    r.status_code, r.url, lti_obj
+                    r.status_code, r.url, lti_id
                 )
             )
             return return_error((
@@ -606,7 +606,7 @@ def get_sessionless_url(lti_id, is_course_nav, lti=lti):
                     'Bad response while getting a sessionless '
                     'launch url:\n {0} {1}\n LTI: {2} \n'
                 ).format(
-                    r.status_code, r.url, lti_obj
+                    r.status_code, r.url, lti_id
                 )
             )
             return return_error((
@@ -637,7 +637,7 @@ def get_lti_list(ltis_json_list, category):
     if json_data is None:
         # this lti threw an exception when talking to Canvas
         app.logger.error(
-            'Canvas exception:\n LTI: {1} \n LTI List: {2} \n'.format(lti_obj, lti_list)
+            'Canvas exception: \n LTI List: {} \n'.format(lti_list)
         )
         return return_error((
             'Couldn\'t connect to Canvas, please refresh and try again. '
@@ -651,7 +651,6 @@ def get_lti_list(ltis_json_list, category):
 
         # get the id from the lti
         for lti_obj in ltis_json_list:
-            print lti_obj
             if lti_obj['name'] != data['name'] or 'none' in data['filter_by'] or category != data['category']:
                 continue
 
@@ -719,6 +718,7 @@ def get_lti_list(ltis_json_list, category):
                         sessionless_launch_url = r.json()['url']
 
             lti_list.append({
+                'display_name': data['display_name'],
                 'name': data['name'],
                 'id': lti_id,
                 'lti_course_navigation': lti_course_navigation,
