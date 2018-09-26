@@ -94,7 +94,7 @@ def check_valid_user(f):
                 # remove old admin key in the session
                 session.pop('admin', None)
 
-            if 'Instructor' in roles:
+            if 'Instructor' in roles or 'TeachingAssistant' in roles:
                 session['instructor'] = True
             elif 'instructor' in session:
                 # remove old instructor key from the session
@@ -342,7 +342,7 @@ def oauth_login(lti=lti):
             user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
             if user is not None:
                 # update the current user's expiration time in db
-                user.refresh_token = session['refresh_token']
+                user.refresh_key = session['refresh_token']
                 user.expires_in = session['expires_in']
                 db.session.add(user)
                 db.session.commit()
@@ -498,18 +498,21 @@ def auth(lti=lti):
         else:
             # weird response from trying to use the refresh token
             app.logger.info(
-                (
-                    'Access token not in json. '
-                    'Bad api key or refresh token? {0} {1} {2} \n {3} {4}'
-                ).format(
-                    r.status_code, session['canvas_user_id'],
-                    session['course_id'], payload, r.url
+                '''Access token not in json.
+                Bad api key or refresh token? {0} {1} {2} \n {3}'''.format(
+                    r.status_code, session, payload, r.url
                 )
             )
-            return return_error((
-                'Authentication error, please refresh and try again. '
-                'If this error persists, please contact ***REMOVED***.'
-            ))
+            app.logger.info(
+                '''Reauthenticating: \n {0} \n {1} \n {2} \n {3}'''.format(
+                    session, r.status_code, r.url, r.headers
+                )
+            )
+            return redirect(
+                settings.BASE_URL+'login/oauth2/auth?client_id=' +
+                settings.oauth2_id + '&response_type=code&redirect_uri=' +
+                settings.oauth2_uri
+            )
     else:
         # good to go!
         # test the api key
