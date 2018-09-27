@@ -15,19 +15,23 @@
 								<img class="logo text-center" src={{ url_for('static', filename='img/logos/'+lti.logo) }} alt="{{lti.name}} logo" />
 							</div>
 						</div>
-						
+
 						<p class="card-text">{{lti.desc}}</p>
 
-						<div class="text-center">
-							<img class="card-img-top img-fluid margin-10" src={{ url_for('static', filename='img/'+lti.screenshot) }} alt="Screenshot" style="border: 1px solid black; border-radius: 4px;" />
+						<div class="text-center card-img-top-container">
+							<img class="card-img-top img-fluid margin-10" src={{ url_for('static', filename='img/'+lti.screenshot) }} alt="Screenshot" />
 						</div>
 
 						<div class="buttons">
-							{% if lti.is_launchable %}
-							<p class="text-center pull-left"><a id="{{lti.id}}"  ga-on="click" ga-event-category="{{lti.name}}_launch" ga-event-action="click" ga-event-label="{{course}}" class="btn btn-success launch" data-coursenav="{{lti.lti_course_navigation}}" href="#"><i class="fa fa-play" aria-hidden="true"></i> &nbsp; Launch</a></p>
-							{% endif %}
+							<p class="text-center float-xs-none float-sm-left float-md-none float-lg-left"><a class="btn btn-primary btn-outline-primary" href="{{lti.docs_url}}" ga-on="click" ga-event-category="{{lti.name}}_learn_more" ga-event-action="click" ga-event-label="{{course}}" target="_blank"><i class="fa fa-info-circle" aria-hidden="true"></i>Learn More</a></p>
 
-							<p class="text-center pull-right"><a class="btn btn-primary" href="{{lti.docs_url}}" ga-on="click" ga-event-category="{{lti.name}}_learn_more" ga-event-action="click" ga-event-label="{{course}}" target="_blank"><i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp; Learn More</a></p>
+							{% if lti.is_launchable %}
+							<p class="text-center float-xs-none float-sm-right float-md-none float-lg-right">
+								<a id="{{lti.id}}" ga-on="click" ga-event-category="{{lti.name}}_launch" ga-event-action="click" ga-event-label="{{course}}"
+								 class="btn btn-success launch" data-coursenav="{{lti.lti_course_navigation}}" href="#">
+									<i class="fa fa-play" aria-hidden="true"></i>Launch</a>
+							</p>
+							{% endif %}
 						</div>
 					</div>
 				</div>
