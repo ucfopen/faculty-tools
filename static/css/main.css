@@ -12,12 +12,17 @@ p {
 }
 
 #banner {
-  background-color: #242424; 
-  padding-top: 20px;
+  background-color: #242424;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+#banner .container {
+  position: relative;
 }
 
 .intro {
-  background-color: #f4f4f4; 
+  background-color: #f4f4f4;
   border-bottom: 2px solid #dbdbdb;
 }
 
@@ -38,7 +43,12 @@ h1 {
 }
 
 #intro-blurb {
-  margin-bottom: 20px;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  width: 155px;
+  transform: translate(0, -50%);
+  background-color: #242424;
 }
 
 #intro-blurb p {
@@ -47,7 +57,7 @@ h1 {
   border: #686868;
   border-style: solid;
   border-width: 1px;
-  border-radius: 5px; 
+  border-radius: 5px;
   font-size: 12px;
 }
 
@@ -71,10 +81,18 @@ h1 {
 }
 
 .image-height {
+  position: relative;
   text-align: center;
-  /*min-height: 100px;*/
+  min-height: 100px;
   margin-top: -10px;
   margin-bottom: 10px;
+}
+
+.image-height img {
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  position: absolute;
 }
 
 .text-right {
@@ -89,19 +107,15 @@ h1 {
   font-size: 22px;
   margin-top: 30px;
   margin-bottom: 10px;
-  color: #ff4536;
+  color: #665d44;
   font-weight: bold;
 }
 
 .like_to {
-  font-size: 19px; 
+  font-size: 19px;
   font-weight: bold;
   /* temp vertical centering fix */
   padding-top: 19%;
-}
-
-.card-deck {
-  margin-bottom: 15px;
 }
 
 .card {
@@ -111,12 +125,34 @@ h1 {
   padding: 0;
 }
 
+.card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-img-top-container {
+  margin-top: auto;
+}
+
+.card-img-top {
+  border: 1px solid rgb(247, 216, 100);
+  border-radius: 4px;
+}
+
 .card-title {
   background: #ffeeae;
   color: #675e44;
   font-size: 18px;
   font-weight: bold;
   padding: 10px;
+}
+
+.card .buttons > p {
+  margin-top: 1rem;
+}
+
+.card .buttons .fa {
+  margin-right: 0.5em;
 }
 
 .logo {
@@ -164,7 +200,6 @@ h1 {
  padding: 9px;
  border-radius: 5px;
  font-size: 18px;
- /* margin-left: 35px; */
 }
 
 #pre_footer {
@@ -189,4 +224,20 @@ h1 {
   margin-top: 30px;
   min-height: 300px;
 }
-/*# sourceMappingURL=main.css.map */
+
+@media (min-width: 576px) {
+  .card-deck .card {
+    flex: none;
+    display: block !important;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+}
+
+@media (min-width: 768px) {
+  .card-deck .card {
+    flex: 1 0 0%;
+    display: flex !important;
+    width: inherit;
+  }
+}
