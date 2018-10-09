@@ -94,7 +94,7 @@ def check_valid_user(f):
                 # remove old admin key in the session
                 session.pop('admin', None)
 
-            if 'Instructor' in roles or 'TeachingAssistant' in roles:
+            if 'Instructor' in roles or 'TeachingAssistant' in roles or 'ContentDeveloper' in roles:
                 session['instructor'] = True
             elif 'instructor' in session:
                 # remove old instructor key from the session
