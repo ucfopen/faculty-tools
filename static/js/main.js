@@ -21,4 +21,16 @@ $(document).ready(function() {
         }
     });
 
+
+    $( ".launch" ).each(function(index) {
+        $(this).on("click", function( event ){
+            event.preventDefault();
+            var lti_id = $(this).attr('id');
+            var lti_course_navigation =   $(this).data('coursenav')
+            $.get( "get_sessionless_url/" + lti_id + "/" + lti_course_navigation, function( data ) {
+              window.location.href = data;
+            });
+
+        });
+    });
 });

@@ -1,44 +1,50 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="intro">
-	<div class="container">
-
-		<div class="row">
-			<div class="col-md-3">
-				<p class="like_to">I would like to explore:</p>
-			</div>
-			<div class="col-md-4 ml-auto" id="button_set_left">
-				<nav>
-					<ul class="list-inline intro-buttons">
-						<li><a href="#" data-filter="assessment" id="extend_quiz" class="btn btn-danger btn-block">Assessment</a></li>
-						<li><a href="#" data-filter="accessibility" id="find_content" class="btn btn-danger btn-block">Accessibility</a></li>
-					</ul>
-				</nav>
-			</div>
-			<div class="col-md-4" id="button_set_right">
-				<nav>
-					<ul class="list-inline intro-buttons">
-						<li><a href="#" data-filter="content" id="make_accessible" class="btn btn-danger btn-block">Content Creation & Enhancement</a></li>
-						<li><a href="#" data-filter="all" id="custom_content" class="btn btn-danger btn-block">Everything</a></li>
-					</ul>
-				</nav>
-			</div>
-		</div>
-	</div>
-</div>
-
 <div class="container">
 	<!-- grid time -->
 	<!-- first row -->
-	<div class="row">
+	
+	<!-- 	<div class="row">
 		<div class="col-md-8 ml-auto mr-auto">
 			<h2 class="text-center" id="all_tools">All tools:</h2>
 			<hr />
 		</div>
+	</div> -->
+
+
+	<div class="row">
+		<div class="col-md-8 ml-auto mr-auto">
+			<h2 class="text-center" id="all_tools">Course Tools</h2>
+			<hr />
+		</div>
 	</div>
 
-	{% include 'lti_list.html' %}
+    {% with ltis=course_tool_lti_list %}
+        {% include 'lti_list.html' %}
+    {% endwith %}
+
+    <div class="row">
+		<div class="col-md-8 ml-auto mr-auto">
+			<h2 class="text-center" id="all_tools">Assignment Editor Tools</h2>
+			<hr />
+		</div>
+	</div>
+	
+	{% with ltis=assignment_lti_list %}
+        {% include 'lti_list.html' %}
+    {% endwith %}
+
+    <div class="row">
+		<div class="col-md-8 ml-auto mr-auto">
+			<h2 class="text-center" id="all_tools">Rich Content Editor Tools</h2>
+			<hr />
+		</div>
+	</div>
+    
+    {% with ltis=rce_lti_list %}
+        {% include 'lti_list.html' %}
+    {% endwith %}
 
 {% endblock content %}
 <!-- Extra div is open. closed in base.html -->
