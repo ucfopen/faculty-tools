@@ -36,6 +36,7 @@ $(document).ready(function() {
 
     // resize containing iframe height
     function resizeFrame(){
+        console.log("resizing frame...");
         var default_height = $('body').height() + 50;
         default_height = default_height > 500 ? default_height : 500;
 
