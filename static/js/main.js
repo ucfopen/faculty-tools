@@ -48,7 +48,7 @@ $(document).ready(function() {
     }
 
     // update iframe height on resize
-    $(document).on('resize', function(){
+    $(window).on('resize', function(){
         resizeFrame();
     });
 
