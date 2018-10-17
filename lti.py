@@ -525,7 +525,7 @@ def auth(lti=lti):
             return redirect(url_for('index'))
         else:
             app.logger.info(
-                'Reauthenticating \n Session: {} Status code: {} URL: {} headers: {}'.format(
+                'Reauthenticating \n Session: {}\nStatus code: {}\nURL: {}\nheaders: {}'.format(
                     session, r.status_code, r.url, r.headers
                 )
             )
@@ -534,15 +534,6 @@ def auth(lti=lti):
                 settings.oauth2_id + '&response_type=code&redirect_uri=' +
                 settings.oauth2_uri
             )
-        app.logger.error(
-            'Some other error: \n Session: {} Status code: {} URL: {} Headers: {}'.format(
-                session, r.status_code, r.url, r.headers, r.json()
-            )
-        )
-        return return_error((
-            'Authentication error, please refresh and try again.'
-            'If this error persists, please contact ***REMOVED***.'
-        ))
 
     app.logger.warning(
         'Some other error, {0} {1}'.format(
