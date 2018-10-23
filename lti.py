@@ -414,6 +414,55 @@ def oauth_login(lti=lti):
     ))
 
 
+def refresh_access_token(user):
+    """
+    Use a user's refresh token to get a new access token.
+    """
+    refresh_token = user.refresh_key
+
+    payload = {
+            'grant_type': 'refresh_token',
+            'client_id': settings.oauth2_id,
+            'redirect_uri': settings.oauth2_uri,
+            'client_secret': settings.oauth2_key,
+            'refresh_token': refresh_token
+        }
+    response = requests.post(
+        settings.BASE_URL + 'login/oauth2/token',
+        data=payload
+    )
+
+    if 'access_token' not in response.json():
+        app.logger.warning((
+            'Access token not in json. Bad api key or refresh token.\n'
+            'URL: {}\n'
+            'Status Code: {}\n'
+            'Payload: {}\n'
+            'Session: {}'
+        ).format(response.url, response.status_code, payload, session))
+        return None
+
+    api_key = response.json()['access_token']
+    app.logger.info(
+        'New access token created\n User: {0}'.format(user.user_id)
+    )
+
+    if 'expires_in' in response.json():
+        current_time = int(time.time())
+        new_expiration_date = current_time + response.json()['expires_in']
+
+        # Update expiration date in db
+        user.expires_in = new_expiration_date
+        db.session.commit()
+
+        # Confirm that expiration date has been updated
+        updated_user = Users.query.filter_by(user_id=int(user.user_id)).first()
+        if updated_user.expires_in != new_expiration_date:
+            app.logger.error()
+
+    return api_key
+
+
 # Checking the user in the db
 @app.route('/auth', methods=['POST', 'GET'])
 @lti(error=error, request='initial', role='staff', app=app)
@@ -524,16 +573,24 @@ def auth(lti=lti):
         if 'WWW-Authenticate' not in r.headers and r.status_code != 401:
             return redirect(url_for('index'))
         else:
-            app.logger.info(
-                'Reauthenticating \n Session: {}\nStatus code: {}\nURL: {}\nheaders: {}'.format(
-                    session, r.status_code, r.url, r.headers
+            # key is bad. First try to get new one using refresh
+            new_token = refresh_access_token(user)
+
+            if new_token:
+                session['api_key'] = new_token
+                return redirect(url_for('index'))
+            else:
+                # Refresh didn't work. Reauthenticate.
+                app.logger.info(
+                    'Reauthenticating \nSession: {}\nStatus code: {}\nURL: {}\nheaders: {}'.format(
+                        session, r.status_code, r.url, r.headers
+                    )
                 )
-            )
-            return redirect(
-                settings.BASE_URL + 'login/oauth2/auth?client_id=' +
-                settings.oauth2_id + '&response_type=code&redirect_uri=' +
-                settings.oauth2_uri
-            )
+                return redirect(
+                    settings.BASE_URL + 'login/oauth2/auth?client_id=' +
+                    settings.oauth2_id + '&response_type=code&redirect_uri=' +
+                    settings.oauth2_uri
+                )
 
     app.logger.warning(
         'Some other error, {0} {1}'.format(
