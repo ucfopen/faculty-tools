@@ -417,6 +417,10 @@ def oauth_login(lti=lti):
 def refresh_access_token(user):
     """
     Use a user's refresh token to get a new access token.
+
+    :rtype: dict
+    :returns: Dictionary with keys 'access_token' and 'expiration_date'.
+        Values will be `None` if refresh fails.
     """
     refresh_token = user.refresh_key
 
@@ -440,27 +444,62 @@ def refresh_access_token(user):
             'Payload: {}\n'
             'Session: {}'
         ).format(response.url, response.status_code, payload, session))
-        return None
+        return {
+            'access_token': None,
+            'expiration_date': None
+        }
 
     api_key = response.json()['access_token']
     app.logger.info(
         'New access token created\n User: {0}'.format(user.user_id)
     )
 
-    if 'expires_in' in response.json():
-        current_time = int(time.time())
-        new_expiration_date = current_time + response.json()['expires_in']
+    if 'expires_in' not in response.json():
+        app.logger.warning((
+            'expires_in not in json. Bad api key or refresh token.\n'
+            'URL: {}\n'
+            'Status Code: {}\n'
+            'Payload: {}\n'
+            'Session: {}'
+        ).format(response.url, response.status_code, payload, session))
+        return {
+            'access_token': None,
+            'expiration_date': None
+        }
 
-        # Update expiration date in db
-        user.expires_in = new_expiration_date
-        db.session.commit()
+    current_time = int(time.time())
+    new_expiration_date = current_time + response.json()['expires_in']
 
-        # Confirm that expiration date has been updated
-        updated_user = Users.query.filter_by(user_id=int(user.user_id)).first()
-        if updated_user.expires_in != new_expiration_date:
-            app.logger.error()
+    # Update expiration date in db
+    user.expires_in = new_expiration_date
+    db.session.commit()
 
-    return api_key
+    # Confirm that expiration date has been updated
+    updated_user = Users.query.filter_by(user_id=int(user.user_id)).first()
+    if updated_user.expires_in != new_expiration_date:
+        readable_expires_in = time.strftime(
+            '%a, %d %b %Y %H:%M:%S',
+            time.localtime(updated_user.expires_in)
+        )
+        readable_new_expiration = time.strftime(
+            '%a, %d %b %Y %H:%M:%S',
+            time.localtime(new_expiration_date)
+        )
+        app.logger.error((
+            'Error in updating user\'s expiration time in the db:\n'
+            'session: {}\n'
+            'DB expires_in: {}\n'
+            'new_expiration_date: {}'
+        ).format(session, readable_expires_in, readable_new_expiration))
+        return {
+            'access_token': None,
+            'expiration_date': None
+        }
+
+    return {
+        'access_token': api_key,
+        'expiration_date': new_expiration_date
+    }
 
 
 # Checking the user in the db
@@ -484,7 +523,6 @@ def auth(lti=lti):
 
     # Get the expiration date
     expiration_date = user.expires_in
-    refresh_token = user.refresh_key
 
     # If expired or no api_key
     if int(time.time()) > expiration_date or 'api_key' not in session:
@@ -493,78 +531,23 @@ def auth(lti=lti):
             'Expired refresh token or api_key not in session\n User: {0} \n '
             'Expiration date in db: {1} Readable expires_in: {2}'
         ).format(user.user_id, user.expires_in, readable_time))
-        payload = {
-            'grant_type': 'refresh_token',
-            'client_id': settings.oauth2_id,
-            'redirect_uri': settings.oauth2_uri,
-            'client_secret': settings.oauth2_key,
-            'refresh_token': refresh_token
-        }
-        r = requests.post(settings.BASE_URL + 'login/oauth2/token', data=payload)
 
-        # We got an access token and can proceed
-        if 'access_token' in r.json():
-            # Set the api key
-            session['api_key'] = r.json()['access_token']
-            app.logger.info(
-                'New access token created\n User: {0}'.format(user.user_id)
-            )
+        refresh = refresh_access_token(user)
 
-            if 'refresh_token' in r.json():
-                session['refresh_token'] = r.json()['refresh_token']
-
-            if 'expires_in' in r.json():
-                # expires in seconds
-                # add the seconds to current time for expiration time
-                # current_time = datetime.now()
-                current_time = int(time.time())
-                expires_in = current_time + r.json()['expires_in']
-                session['expires_in'] = expires_in
-
-                # Try to save the new expiration date
-                user.expires_in = session['expires_in']
-                db.session.commit()
-
-                # check that the expiration date updated
-                check_expiration = Users.query.filter_by(
-                    user_id=int(session['canvas_user_id'])).first()
-
-                # compare what was saved to the old session
-                # if it didn't update, error
-
-                if check_expiration.expires_in == long(session['expires_in']):
-                    return redirect(url_for('index'))
-                else:
-                    app.logger.error((
-                        'Error in updating user\'s expiration time '
-                        'in the db:\n session: {} Readable timestamp: {}'
-                    ).format(session, readable_time))
-
-                    return return_error((
-                        'Authentication error, please refresh and try again. '
-                        'If this error persists, please contact ***REMOVED***.'
-                    ))
+        if refresh['access_token'] and refresh['expiration_date']:
+            session['api_key'] = refresh['access_token']
+            session['expires_in'] = refresh['expiration_date']
+            return redirect(url_for('index'))
         else:
-            # weird response from trying to use the refresh token
-            app.logger.info(
-                '''Access token not in json.
-                Bad api key or refresh token? {0} {1} {2} \n {3}'''.format(
-                    r.status_code, session, payload, r.url
-                )
-            )
-            app.logger.info(
-                '''Reauthenticating: \n {0} \n {1} \n {2} \n {3}'''.format(
-                    session, r.status_code, r.url, r.headers
-                )
-            )
+            # Refresh didn't work. Reauthenticate.
+            app.logger.info('Reauthenticating:\nSession: {}'.format(session))
             return redirect(
                 settings.BASE_URL+'login/oauth2/auth?client_id=' +
                 settings.oauth2_id + '&response_type=code&redirect_uri=' +
                 settings.oauth2_uri
             )
     else:
-        # good to go!
-        # test the api key
+        # API key that shouldn't be expired. Test it.
         auth_header = {'Authorization': 'Bearer ' + session['api_key']}
         r = requests.get(settings.API_URL + 'users/%s/profile' %
                          (session['canvas_user_id']), headers=auth_header)
@@ -573,19 +556,15 @@ def auth(lti=lti):
         if 'WWW-Authenticate' not in r.headers and r.status_code != 401:
             return redirect(url_for('index'))
         else:
-            # key is bad. First try to get new one using refresh
-            new_token = refresh_access_token(user)
+            # Key is bad. First try to get new one using refresh
+            new_token = refresh_access_token(user)['access_token']
 
             if new_token:
                 session['api_key'] = new_token
                 return redirect(url_for('index'))
             else:
                 # Refresh didn't work. Reauthenticate.
-                app.logger.info(
-                    'Reauthenticating \nSession: {}\nStatus code: {}\nURL: {}\nheaders: {}'.format(
-                        session, r.status_code, r.url, r.headers
-                    )
-                )
+                app.logger.info('Reauthenticating\nSession: {}'.format(session))
                 return redirect(
                     settings.BASE_URL + 'login/oauth2/auth?client_id=' +
                     settings.oauth2_id + '&response_type=code&redirect_uri=' +
