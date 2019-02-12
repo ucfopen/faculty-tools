@@ -1,0 +1,15 @@
+[
+    {
+        "display_name": "Name to Display",
+        "name": "Installed Tool Name",
+        "tool_id": "tool_id",
+        "allowed_roles": [""],
+        "desc": "Tool Description",
+        "screenshot": "screenshot.png",
+        "logo": "logo.svg",
+        "filter_by": ["all"],
+        "docs_url": "https://example.com/tool/docs/",
+        "is_launchable": true,
+        "category": "Course Tool"
+    },
+]

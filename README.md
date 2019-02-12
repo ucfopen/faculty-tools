@@ -19,6 +19,24 @@ pip install -r requirements.txt
 
 Keep whitelist.json in mind. What LTIs do you want the instructors and faculty to see?
 
+```
+[
+    {
+        "display_name": "Name to Display",              # Allows viewable name to be different from installed name, ie: Attendance vs. RollCall
+        "name": "Installed Tool Name",                  # The name of the tool from within the Settings page.
+        "tool_id": "tool_id",                           # The unique tool id, not currently needed
+        "allowed_roles": [""],                          # For future use
+        "desc": "Tool Description",
+        "screenshot": "screenshot.png",
+        "logo": "logo.svg",
+        "filter_by": ["all"],                           # For future use
+        "docs_url": "https://example.com/tool/docs/",
+        "is_launchable": true,                          # Turns off/on launch button inside Faculty Tools - Useful for docs.
+        "category": "Course Tool"                       # Options: Course Tool, Assignment Editor, Rich Content Editor
+    },
+]
+```
+
 ## Create DB
 
 - Change directory into the project folder. Create the database in python shell:
