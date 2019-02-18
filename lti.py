@@ -50,10 +50,16 @@ class Users(db.Model):
 
 # Utility Functions
 @app.context_processor
-def utility_processor():
+def ga_utility_processor():
     def google_analytics():
         return settings.GOOGLE_ANALYTICS
-    return dict(google_analytics=google_analytics)
+    return dict(google_analytics=google_analytics())
+
+@app.context_processor
+def title_utility_processor():
+    def title():
+        return settings.PAGE_TITLE
+    return dict(title=title())
 
 
 def return_error(msg):
@@ -140,7 +146,7 @@ def check_valid_user(f):
 @check_valid_user
 def index(lti=lti):
     """
-    Main entry point to web application, call all the things and send the data to the template
+    Main entry point to web application, get all whitelisted LTIs and send the data to the template
     """
 
     # Test API key to see if they need to reauthenticate
@@ -206,6 +212,7 @@ def index(lti=lti):
             'If this error persists please contact ***REMOVED***.'
         ))
 
+    # These 3 lines get all the LTIs and sort them into lists for the template to parse 
     # course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool")
     # assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
     # rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")

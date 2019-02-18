@@ -18,7 +18,7 @@
 
 
 
-	<title>UCF Faculty Tools</title>
+	<title>{{ title }}</title>
 
 </head>
 <body>
@@ -81,14 +81,14 @@
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-  ga('create', '{{ google_analytics() }}', 'auto');
+  ga('create', '{{ google_analytics }}', 'auto');
   ga('send', 'pageview');
 
 </script> -->
 
 <script>
 window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', '{{ google_analytics() }}', 'auto');
+ga('create', '{{ google_analytics }}', 'auto');
 
 // Replace the following lines with the plugins you want to use.
 ga('require', 'eventTracker');

@@ -49,3 +49,6 @@ configClass = 'config.DevelopmentConfig'
 whitelist = 'whitelist.json'
 
 GOOGLE_ANALYTICS = ''
+
+
+PAGE_TITLE = 'Faculty Tools'

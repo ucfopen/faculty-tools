@@ -12,7 +12,7 @@
 		</div>
 	</div> -->
 
-
+	{% if course_tool_lti_list %}
 	<div class="row">
 		<div class="col-md-8 ml-auto mr-auto">
 			<h2 class="text-center" id="all_tools">Course Tools</h2>
@@ -23,7 +23,9 @@
     {% with ltis=course_tool_lti_list %}
         {% include 'lti_list.html' %}
     {% endwith %}
+    {% endif %}
 
+    {% if assignment_lti_list %}
     <div class="row">
 		<div class="col-md-8 ml-auto mr-auto">
 			<h2 class="text-center" id="all_tools">Assignment Editor Tools</h2>
@@ -34,17 +36,21 @@
 	{% with ltis=assignment_lti_list %}
         {% include 'lti_list.html' %}
     {% endwith %}
+    {% endif %}
 
+	{% if rce_lti_list %}
     <div class="row">
 		<div class="col-md-8 ml-auto mr-auto">
 			<h2 class="text-center" id="all_tools">Rich Content Editor Tools</h2>
 			<hr />
 		</div>
 	</div>
+
     
     {% with ltis=rce_lti_list %}
         {% include 'lti_list.html' %}
     {% endwith %}
+    {% endif %}
 
 {% endblock content %}
 <!-- Extra div is open. closed in base.html -->
