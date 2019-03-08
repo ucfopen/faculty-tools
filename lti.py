@@ -213,9 +213,15 @@ def index(lti=lti):
         ))
 
     # These 3 lines get all the LTIs and sort them into lists for the template to parse 
-    # course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool")
-    # assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
-    # rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
+    try:
+        course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool")
+        assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
+        rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
+    except:
+        return return_error((
+            'There is something wrong with the whitelist.json file'
+        ))
+
 
     return render_template(
         'main_template.html',

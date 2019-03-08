@@ -11,5 +11,5 @@
         "docs_url": "https://example.com/tool/docs/",
         "is_launchable": true,
         "category": "Course Tool"
-    },
+    }
 ]
