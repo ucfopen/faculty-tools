@@ -16,38 +16,25 @@
 	<script src="https://use.fontawesome.com/60e3e19420.js"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
 
-
-
 	<title>{{ title }}</title>
 
 </head>
 <body>
-	  <div id="banner">
-		<div class="container">
-			<div>
-				<div>
-					<h1><img src="{{ url_for('static', filename='img/faculty_tools_icon.png') }}" /> Faculty Tools</h1>
-				</div>
-				<div id="intro-blurb">
-					<p>Want to make your online course amazing? Learn about more tools <a href="https://***REMOVED***/" target="_blank">here... </a></p>
-				</div>
-			</div>
-		</div>
-	  </div>
-	  <div class="intro">
+	<div id="banner">
+		{% include 'banner.html' %}
+	</div>
+	<div class="intro">
 		<div class="container">
 			<div class="row">
 				<div class="col-md-12" id="toolkit-intro">
-
-					<p><strong>Faculty Tools</strong> is a collection of tools &amp; resources to make the online teaching experience great for you and your students.</p>
-
-					<!-- <p>Here are some options for what you can do with the toolkit:</p> -->
+					<p><strong>{{ title }}</strong> is a collection of tools &amp; resources to make the online teaching experience great for you and your students.</p>
 				</div>
 			</div>
 		</div>
-	  </div>
+	</div>
 
-	  {% block content %} {% endblock %}
+	<div class="container">
+		{% block content %} {% endblock %}
 
 		<div class="row" id="pre_footer">
 			<div class="col-md-9 col-sm-9" style="padding-top: 10px;">
@@ -58,33 +45,12 @@
 			</div>
 		</div>
 	</div> <!-- /container -->
+
 	<footer id="footer">
-	<div class="container">
-		<div class="row">
-			<div class="col-sm-3">
-				<img style="width: 200px;" src="{{ url_for('static', filename='img/***REMOVED***') }}" alt="Center for Distributed Learning" />
-			</div>
-			<div class="col-sm-7 text-right ml-auto">
-				<a href="https://***REMOVED***/" target="_blank">Learn more about this page</a>
-				<br />
-				<a href="https://***REMOVED***" target="_blank">Interested in collborating or adding something here? Contact us!</a>
-			</div>
-		</div>
-	</div>
+		{% include 'footer.html' %}
 	</footer>
 
 </body>
-
-<!-- <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-  ga('create', '{{ google_analytics }}', 'auto');
-  ga('send', 'pageview');
-
-</script> -->
 
 <script>
 window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;

@@ -59,7 +59,7 @@ def ga_utility_processor():
 @app.context_processor
 def title_utility_processor():
     def title():
-        return settings.PAGE_TITLE
+        return settings.TOOL_TITLE
     return dict(title=title())
 
 
@@ -255,7 +255,7 @@ def status():
     # Check index
     try:
         response = requests.get(url_for('index', _external=True), verify=False)
-        index_check = response.status_code == 200 and settings.PAGE_TITLE in response.text
+        index_check = response.status_code == 200 and settings.TOOL_TITLE in response.text
         status['checks']['index'] = index_check
     except Exception:
         app.logger.exception('Index check failed.')

@@ -51,4 +51,4 @@ whitelist = 'whitelist.json'
 GOOGLE_ANALYTICS = ''
 
 
-PAGE_TITLE = 'Faculty Tools'
+TOOL_TITLE = 'Faculty Tools'
