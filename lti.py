@@ -55,6 +55,7 @@ def ga_utility_processor():
         return settings.GOOGLE_ANALYTICS
     return dict(google_analytics=google_analytics())
 
+
 @app.context_processor
 def title_utility_processor():
     def title():
@@ -212,23 +213,21 @@ def index(lti=lti):
             'If this error persists please contact ***REMOVED***.'
         ))
 
-    # These 3 lines get all the LTIs and sort them into lists for the template to parse 
+    # These 3 lines get all the LTIs and sort them into lists for the template to parse
     try:
         course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool")
         assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
         rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
-    except:
-        return return_error((
-            'There is something wrong with the whitelist.json file'
-        ))
-
+    except (ValueError, IOError):
+        msg = 'There is something wrong with the whitelist.json file'
+        app.logger.exception(msg)
+        return return_error(msg)
 
     return render_template(
         'main_template.html',
-        #ltis=lti_list,
-        course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool"),
-        assignment_lti_list = get_lti_list(ltis_json_list, "Assignment Editor"),
-        rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor"),
+        course_tool_lti_list=course_tool_lti_list,
+        assignment_lti_list=assignment_lti_list,
+        rce_lti_list=rce_lti_list,
         course=session['course_id']
     )
 
@@ -248,6 +247,7 @@ def status():
             'dev_key': False
         },
         'url': url_for('index', _external=True),
+        'xml_url': url_for('xml', _external=True),
         'base_url': settings.BASE_URL,
         'debug': app.debug
     }
@@ -255,23 +255,23 @@ def status():
     # Check index
     try:
         response = requests.get(url_for('index', _external=True), verify=False)
-        index_check = response.status_code == 200 and 'UCF Faculty Tools' in response.text
+        index_check = response.status_code == 200 and settings.PAGE_TITLE in response.text
         status['checks']['index'] = index_check
-    except Exception as e:
+    except Exception:
         app.logger.exception('Index check failed.')
 
     # Check xml
     try:
         response = requests.get(url_for('xml', _external=True), verify=False)
         status['checks']['xml'] = 'application/xml' in response.headers.get('Content-Type')
-    except Exception as e:
+    except Exception:
         app.logger.exception('XML check failed.')
 
     # Check DB connection
     try:
         db.session.query("1").all()
         status['checks']['db'] = True
-    except Exception as e:
+    except Exception:
         app.logger.exception('DB connection failed.')
 
     # Check dev key?
@@ -284,7 +284,7 @@ def status():
             )
         )
         status['checks']['dev_key'] = response.status_code == 200
-    except Exception as e:
+    except Exception:
         app.logger.exception('Dev Key check failed.')
 
     # Overall health check - if all checks are True
@@ -671,11 +671,8 @@ def get_lti_list(ltis_json_list, category):
     if os.path.isfile(settings.whitelist):
         json_data = json.loads(open(settings.whitelist).read())
     else:
-        app.logger.exception('Error with whitelist.json')
-        return return_error((
-            'Couldn\'t connect to Canvas, please refresh and try again. '
-            'If this error persists, please contact ***REMOVED***.'
-        ))
+        app.logger.error('whitelist.json does not exist')
+        raise IOError('whitelist.json does not exist')
 
     if json_data is None:
         # this lti threw an exception when talking to Canvas
