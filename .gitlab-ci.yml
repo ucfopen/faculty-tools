@@ -1,0 +1,6 @@
+before_script:
+  - pip install -r test_requirements.txt
+
+run-test:
+  script:
+    - flake8
