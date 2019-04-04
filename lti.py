@@ -76,75 +76,9 @@ def error(exception=None):
     ))
 
 
-def check_valid_user(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        """
-        Decorator to check if the user is allowed access to the app.
-
-        If user is allowed, return the decorated function.
-        Otherwise, return an error page with corresponding message.
-        """
-
-        if request.form:
-            session.permanent = True
-            # 1 hour long session
-            app.permanent_session_lifetime = timedelta(minutes=60)
-            session['course_id'] = request.form.get('custom_canvas_course_id')
-            session['canvas_user_id'] = request.form.get('custom_canvas_user_id')
-            roles = request.form['roles']
-
-            if 'Administrator' in roles:
-                session['admin'] = True
-                session['instructor'] = True
-            elif 'admin' in session:
-                # remove old admin key in the session
-                session.pop('admin', None)
-
-            if 'Instructor' in roles or 'TeachingAssistant' in roles or 'ContentDeveloper' in roles:
-                session['instructor'] = True
-            elif 'instructor' in session:
-                # remove old instructor key from the session
-                session.pop('instructor', None)
-
-        # no session and no request
-        if not session:
-            if not request.form:
-                app.logger.warning('No session and no request. Not allowed.')
-                return return_error('Not allowed!')
-
-        # no canvas_user_id
-        if not request.form.get('custom_canvas_user_id') and 'canvas_user_id' not in session:
-            app.logger.warning('No canvas user ID. Not allowed.')
-            return return_error('Not allowed!')
-
-        # no course_id
-        if not request.form.get('custom_canvas_course_id') and 'course_id' not in session:
-            app.logger.warning('No course ID. Not allowed.')
-            return return_error('Not allowed!')
-
-        # not permitted
-        # Instructor shows up in Teacher and Admin sessions
-        # If they are neither, they're not in the right place
-
-        if 'instructor' not in session and 'admin' not in session:
-            app.logger.warning(
-                'Not enrolled as Teacher or an Admin. Not allowed. Session: {}'.format(session)
-            )
-            return return_error((
-                'You are not enrolled in this course as a Teacher or Designer. '
-                'Please refresh and try again. If this error persists, please '
-                'contact ***REMOVED***.'
-            ))
-
-        return f(*args, **kwargs)
-    return decorated_function
-
-
 # Web Views / Routes
 @app.route('/')
 @lti(error=error, role='staff', app=app)
-@check_valid_user
 def index(lti=lti):
     """
     Main entry point to web application, get all whitelisted LTIs and send the data to the template
@@ -518,7 +452,6 @@ def refresh_access_token(user):
 # Checking the user in the db
 @app.route('/auth', methods=['POST', 'GET'])
 @lti(error=error, request='initial', role='staff', app=app)
-@check_valid_user
 def auth(lti=lti):
     # Try to grab the user
     user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
@@ -598,7 +531,6 @@ def auth(lti=lti):
 
 @app.route('/get_sessionless_url/<lti_id>/<is_course_nav>')
 @lti(error=error, role='staff', app=app)
-@check_valid_user
 def get_sessionless_url(lti_id, is_course_nav, lti=lti):
     sessionless_launch_url = None
 
