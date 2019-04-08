@@ -11,20 +11,9 @@
 			<hr />
 		</div>
 	</div> -->
-
-
-	<div class="row">
-		<div class="col-md-8 ml-auto mr-auto">
-			<h2 class="text-center" id="all_tools">Students of Concern Resources</h2>
-			<hr />
-		</div>
+	<div class="alert alert-info" role="alert">
+	  Have a concern about a student?  Click here for tools...
 	</div>
-	<div class="row">
-		<p>***REMOVED***</p>
-
-	</div>
-
-	{% include 'cares_list.html' %}
 
 	<div class="row">
 		<div class="col-md-8 ml-auto mr-auto">
@@ -58,6 +47,19 @@
     {% with ltis=rce_lti_list %}
         {% include 'lti_list.html' %}
     {% endwith %}
+
+   	<div class="row">
+		<div class="col-md-8 ml-auto mr-auto">
+			<h2 class="text-center" id="all_tools">Students of Concern Resources</h2>
+			<hr />
+		</div>
+	</div>
+	<div class="row">
+		<p>***REMOVED***</p>
+
+	</div>
+
+	{% include 'cares_list.html' %}
 
 {% endblock content %}
 <!-- Extra div is open. closed in base.html -->
