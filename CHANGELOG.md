@@ -1,5 +1,9 @@
 # Change Log
 
+## [Unreleased]
+
+### General
+
 ## [1.1.0] - 2018-10-25
 
 ### General
@@ -8,7 +12,8 @@
 
 ### Bugfixes
 
-- Fixed an issue where switching browsers would cause Faculty Tools to ask the user to reauthorize with Canvas, leading to multiple access tokens.
+- Fixed an issue where switching browsers would cause Faculty Tools to ask the
+    user to reauthorize with Canvas, leading to multiple access tokens.
 
 ## [1.0.0] - 2018-08-29
 
