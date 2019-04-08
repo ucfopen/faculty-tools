@@ -1,6 +1,5 @@
 Flask
 Flask-SQLAlchemy
-Flask-Testing
 mysql-python
 -e git+https://github.com/ucfcdl/pylti.git@roles#egg=PyLTI
 requests

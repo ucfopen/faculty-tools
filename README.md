@@ -2,24 +2,37 @@
 
 ## Dev Key
 
-- You will need a dev key for OAuth. It can be generated on a local version of canvas for dev and testing. To get a local version of Canvas, check out [our Docker guide][1]. To get one for ***REMOVED*** or ***REMOVED***, ask the LMS admins.
-	- You can generate a key on your local version by going to **Courses / Site Admin / Developer Keys** in your local version of Canvas. You'll need to have your redirect URI **(oauth2_uri)** ready, since you need it to make the key. If using Docker, make sure the urls are **http** instead of **https**. When you make a key, copy the ID to **oauth2_id** and the key into **oauth2_key** in your settings file.
+You will need a dev key for OAuth. It can be generated on a local version of
+canvas for dev and testing. To get a local version of Canvas, check out [our
+Docker guide][1]. To get one for ***REMOVED*** or ***REMOVED***, ask
+the LMS admins.
+
+- You can generate a key on your local version by going to **Courses / Site
+  Admin / Developer Keys** in your local version of Canvas. You'll need to have
+  your redirect URI **(oauth2_uri)** ready, since you need it to make the key.
+  If using Docker, make sure the urls are **http** instead of **https**. When
+  you make a key, copy the ID to **oauth2_id** and the key into **oauth2_key**
+  in your settings file.
 
 ## Virtual Environment
 
-- Create a virtual environment and activate it.
-``` 
+Create a virtual environment and activate it.
+
+```sh
 virtualenv venv
 source venv/bin/activate
 ```
-- Install everything:
-```
+
+Install everything:
+
+```sh
 pip install -r requirements.txt
 ```
 
-Keep whitelist.json in mind. What LTIs do you want the instructors and faculty to see?
+Keep whitelist.json in mind. What LTIs do you want the instructors and faculty
+to see?
 
-```
+```json
 [
     {
         "display_name": "Name to Display",              # Allows viewable name to be different from installed name, ie: Attendance vs. RollCall
@@ -40,20 +53,25 @@ Keep whitelist.json in mind. What LTIs do you want the instructors and faculty t
 ## Create DB
 
 - Change directory into the project folder. Create the database in python shell:
+
+```sh
+from lti import db
+db.create_all()
 ```
-    from lti import db
-    db.create_all()
-```
-- If you want to look at your users table in the future, you can look at it in the python shell:
-```
-    from lti import Users
-    Users.query.all()
+
+- If you want to look at your users table in the future, you can look at it in
+  the python shell:
+
+```python
+from lti import Users
+Users.query.all()
 ```
 
 ## Environment Variables
 
 - Set the flask app to `lti.py` and debug to true.
-```
+
+```sh
 export FLASK_APP=lti.py
 export FLASK_DEBUG=1
 ```
@@ -61,10 +79,13 @@ export FLASK_DEBUG=1
 ## Run the App
 
 - Run the lti script while your virtual environment is active.
-```
+
+```sh
 flask run
 ```
-- Go to the /xml page, http://0.0.0.0:8080/xml by default
-- Copy the xml, install it into a test course. If you're using Docker, don't forget that it will only work on your Docker instance because of the dev key.
+
+- Go to the /xml page, [http://0.0.0.0:5000/xml](http://0.0.0.0:5000/xml) by default
+- Copy the xml, install it into a test course. If you're using Docker, don't
+  forget that it will only work on your Docker instance because of the dev key.
 
 [1]: https://***REMOVED***/snippets/73 "Docker Guide"

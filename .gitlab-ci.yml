@@ -1,0 +1,9 @@
+before_script:
+  - apk add --no-cache gcc git libc-dev make py-mysqldb py-pip ruby-dev
+  - pip install -r test_requirements.txt
+  - gem install --no-document json mdl
+
+run-test:
+  script:
+    - flake8
+    - mdl *.md

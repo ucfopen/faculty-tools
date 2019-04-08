@@ -1,7 +1,5 @@
-from datetime import timedelta
 from logging import Formatter, INFO
 from logging.handlers import RotatingFileHandler
-from functools import wraps
 import json
 import os
 import time
@@ -300,7 +298,7 @@ def oauth_login(lti=lti):
 
                 # compare what was saved to the old session
                 # if it didn't update, error
-                if check_expiration.expires_in == long(session['expires_in']):
+                if check_expiration.expires_in == int(session['expires_in']):
                     return redirect(url_for('index'))
                 else:
                     app.logger.error(
@@ -623,7 +621,11 @@ def get_lti_list(ltis_json_list, category):
 
         # get the id from the lti
         for lti_obj in ltis_json_list:
-            if lti_obj['name'] != data['name'] or 'none' in data['filter_by'] or category != data['category']:
+            if (
+                lti_obj['name'] != data['name']
+                or 'none' in data['filter_by']
+                or category != data['category']
+            ):
                 continue
 
             sessionless_launch_url = None
