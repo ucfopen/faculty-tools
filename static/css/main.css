@@ -26,6 +26,21 @@ p {
   border-bottom: 2px solid #dbdbdb;
 }
 
+.list-of-links {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 13px;
+}
+
+.list-of-links li {
+  padding-bottom: 5px;
+}
+
+.list-of-links .fa {
+  margin-right: 2px;
+  font-size: .85em;
+}
+
 h1 {
   color: #ffffff;
   font-weight: bold;
@@ -41,6 +56,8 @@ h1 {
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
+/* Jump To Section */
 
 .jump-to-section {
   background: #e4f4f7;
@@ -79,6 +96,17 @@ h1 {
 .jump-to-section ul li a:hover {
   background-color: #0c5460;
   border-color: #0c5460;
+}
+
+/* List section, used for Student of Concern section */
+
+.list-section h5 {
+  margin-top: 25px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #393939;
 }
 
 #intro-blurb {
@@ -279,6 +307,14 @@ h1 {
     flex: 1 0 0%;
     display: flex !important;
     width: inherit;
+  }
+
+  .no-padding-col-right {
+    padding-right: 0;
+  }
+
+  .no-padding-col-left {
+    padding-left: 0;
   }
 }
 
