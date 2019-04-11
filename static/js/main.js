@@ -34,6 +34,14 @@ $(document).ready(function() {
         });
     });
 
+    /* Jump-to section menu */
+    $('.jump-to-section').on('click', 'a[href^="#"]', function (event) {
+      event.preventDefault();
+      var elmnt_id = $.attr(this, 'href').replace('#', '');
+      var elmnt = document.getElementById(elmnt_id);
+      elmnt.scrollIntoView();
+    });
+
     // resize containing iframe height
     function resizeFrame(){
         console.log("resizing frame...");
