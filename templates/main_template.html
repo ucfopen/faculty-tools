@@ -48,18 +48,21 @@
         {% include 'lti_list.html' %}
     {% endwith %}
 
-   	<div class="row">
+	<div class="row" style="margin-top: 20px;">
 		<div class="col-md-8 ml-auto mr-auto">
-			<h2 class="text-center section_headline" id="students_of_concern">Students of Concern Resources</h2>
 			<hr />
 		</div>
 	</div>
-	<div class="row">
-		<p>***REMOVED***</p>
 
+	<div class="row test-test-test">
+		<h2 class="text-center section_headline" id="students_of_concern">Students of Concern Resources</h2>
+
+		<div class="col-md-12 ml-auto mr-auto" style="padding: 40px;">
+			<p>***REMOVED***</p>
+
+			{% include 'cares_list.html' %}
+		</div>
 	</div>
-
-	{% include 'cares_list.html' %}
 
 {% endblock content %}
 <!-- Extra div is open. closed in base.html -->
