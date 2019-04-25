@@ -244,6 +244,7 @@ def xml():
 @app.route('/oauthlogin', methods=['POST', 'GET'])
 @lti(error=error, request='session', role='staff', app=app)
 def oauth_login(lti=lti):
+
     code = request.args.get('code')
     payload = {
         'grant_type': 'authorization_code',
@@ -451,6 +452,9 @@ def refresh_access_token(user):
 @app.route('/auth', methods=['POST', 'GET'])
 @lti(error=error, request='initial', role='staff', app=app)
 def auth(lti=lti):
+    session['course_id'] = request.form.get('custom_canvas_course_id')
+    session['canvas_user_id'] = request.form.get('custom_canvas_user_id')
+
     # Try to grab the user
     user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
 

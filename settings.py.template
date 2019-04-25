@@ -1,16 +1,25 @@
-UCF_ID = '00000'
+# Title of the tool. Appears in the <title> element, headers, and configuration XML
+TOOL_TITLE = 'Faculty Tools'
 
-API_URL = ''
+# Canvas instance URL. ex: https://example.instructure.com/
 BASE_URL = ''
+API_URL = BASE_URL + 'api/v1/'
 
-# consumer key and secret
+# Secret key to sign Flask sessions with. KEEP THIS SECRET!
+secret_key = ''
 
+# LTI consumer key and shared secret
+CONSUMER_KEY = 'key'
+SHARED_SECRET = 'secret'
+
+# Configuration for pylti library. Uses the above key and secret
 PYLTI_CONFIG = {
     'consumers': {
-        'key': {
-            'secret': 'secret'
+        CONSUMER_KEY: {
+            'secret': SHARED_SECRET
         }
     },
+    # Custom configurable roles
     'roles': {
         'staff': [
             'urn:lti:instrole:ims/lis/Administrator',
@@ -21,18 +30,22 @@ PYLTI_CONFIG = {
     }
 }
 
-secret_key = ''
-
-# The Client_ID Instructure gives you
+# The "Oauth2 Redirect URI" that you provided to Instructure.
+oauth2_uri = ''  # ex. 'https://localhost:5000/oauthlogin'
+# The Client_ID Instructure gave you
 oauth2_id = ''
-# The Secret Instructure gives you
+# The Secret Instructure gave you
 oauth2_key = ''
-# The "Oauth2 Redirect URI" you provided Instructure.
-oauth2_uri = ''
 
+# Logging configuration
 LOG_MAX_BYTES = 10000
 LOG_BACKUP_COUNT = 1
 ERROR_LOG = 'logs/faculty-tools.log'
+
+whitelist = 'whitelist.json'
+
+# Google Analytics Tracking ID (optional)
+GOOGLE_ANALYTICS = ''
 
 
 def select_db(x):
@@ -45,10 +58,3 @@ def select_db(x):
 
 
 configClass = 'config.DevelopmentConfig'
-
-whitelist = 'whitelist.json'
-
-GOOGLE_ANALYTICS = ''
-
-
-TOOL_TITLE = 'Faculty Tools'
