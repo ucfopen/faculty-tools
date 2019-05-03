@@ -61,35 +61,34 @@ h1 {
 
 .jump-to-section {
   background: #e4f4f7;
-  text-align: center;
   color: #0c5460;
   font-weight: bold;
   padding: 5px 0 16px 0;
+  text-align: center;
 }
 
 .jump-to-section h2 {
-  font-size: 1em;
   display: inline-block;
+  font-size: 1em;
   font-weight: bold;
 }
 
 .jump-to-section ul {
+  display: inline;
   list-style-type: none;
   margin: 0;
   padding: 0;
-  display: inline;
 }
 
 .jump-to-section ul li {
-  margin: 0;
-  padding: 0;
   display: inline-block;
+  margin: 0;
   padding: 13px 0 0px 16px;
 }
 
 .jump-to-section ul li a {
-  color: #0c5460;
   border-color: #0c5460;
+  color: #0c5460;
 }
 
 .jump-to-section ul li a:active,
@@ -99,65 +98,76 @@ h1 {
 }
 
 .list-section hr {
-  width: 70%;
+  margin-bottom: 2em;
+  margin-top: 1em;
+  width: 90%;
+}
+
+h6.link-list-heading {
+  color: rgba(145, 145, 145, 0.8);
+  font-size: 14px;
+  letter-spacing: 1px;
+  margin-top: 20px;
+  text-transform: uppercase;
 }
 
 /* List section, used for Student of Concern section */
 
-.test-test-test {
+.boxed-section {
   background: #fff;
   border: 3px solid #ffeeae;
   box-shadow: 0px 2px 1px rgba(220,220,220,1);
+  margin-bottom: 40px;
+  margin-top: 5px;
   padding: 0;
-  margin-top: 40px;
 }
 
-.test-test-test .section_headline {
+.boxed-section .section_headline {
   background: #ffeeae;
   color: #675e44;
   font-size: 18px;
   font-weight: bold;
+  margin: 0 0 20px 0;
   padding: 10px;
-  margin: 0;
   width: 100%;
-  margin-bottom: 20px;
 }
 
 .list-section {
-    margin-top: 28px;
+  margin-top: 28px;
 }
 
 .list-section h5 {
-  margin-top: 25px;
-  margin-bottom: 15px;
+  color: #393939;
   font-size: 16px;
   font-weight: 900;
+  margin-bottom: 1em;
+  margin-top: 1em;
   text-transform: uppercase;
-  color: #393939;
 }
 
 .text-column-image-container {
+  margin-top: 1em;
+  min-height: 145px;
   text-align: center;
-  min-height: 165px;
 }
 
 #intro-blurb {
+  background-color: #242424;
   position: absolute;
   right: 15px;
   top: 50%;
-  width: 155px;
   transform: translate(0, -50%);
-  background-color: #242424;
+  width: 155px;
 }
 
 #intro-blurb p {
-  padding: 5px;
-  color: #FFF;
-  border: #686868;
+  border-color: #686868;
+  border-radius: 5px;
   border-style: solid;
   border-width: 1px;
-  border-radius: 5px;
+  color: #FFF;
   font-size: 12px;
+  padding: 5px;
 }
 
 #intro-blurb a {
@@ -180,11 +190,11 @@ h1 {
 }
 
 .image-height {
+  margin-bottom: 10px;
+  margin-top: -10px;
+  min-height: 100px;
   position: relative;
   text-align: center;
-  min-height: 100px;
-  margin-top: -10px;
-  margin-bottom: 10px;
 }
 
 .image-height img {
@@ -204,11 +214,11 @@ h1 {
 
 #all_tools,
 .section_headline {
-  font-size: 22px;
-  margin-top: 30px;
-  margin-bottom: 10px;
   color: #665d44;
+  font-size: 22px;
   font-weight: bold;
+  margin-bottom: 10px;
+  margin-top: 30px;
 }
 
 .like_to {
@@ -359,6 +369,12 @@ h1 {
   }
   .jump-to-section ul li a {
     font-size: 0.85em;
+  }
+}
+
+@media (max-width: 767px) {
+  .boxed-section {
+    text-align: center;
   }
 }
 
