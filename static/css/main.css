@@ -60,8 +60,7 @@ h1 {
 /* Jump To Section */
 
 .jump-to-section {
-  background: #e4f4f7;
-  color: #0c5460;
+  background: #f4f4f4;
   font-weight: bold;
   padding: 5px 0 16px 0;
   text-align: center;
@@ -83,19 +82,19 @@ h1 {
 .jump-to-section ul li {
   display: inline-block;
   margin: 0;
-  padding: 13px 0 0px 16px;
+  padding: 13px 0 0px 9px;
 }
 
-.jump-to-section ul li a {
-  border-color: #0c5460;
-  color: #0c5460;
+ .jump-to-section ul li a {
+   padding: 4px 8px;
 }
 
+/*
 .jump-to-section ul li a:active,
 .jump-to-section ul li a:hover {
   background-color: #0c5460;
   border-color: #0c5460;
-}
+} */
 
 .list-section hr {
   margin-bottom: 2em;
