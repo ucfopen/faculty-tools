@@ -7,3 +7,4 @@ run-test:
   script:
     - flake8
     - mdl *.md
+    - coverage run -m unittest discover
