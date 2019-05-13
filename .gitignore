@@ -1,5 +1,6 @@
 # config/settings
 settings.py
+logs
 
 # system
 *.DS_Store
@@ -11,6 +12,7 @@ settings.py
 
 # virtual environment
 env/
+venv/
 
 # coverage
 .coverage
