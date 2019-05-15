@@ -1,5 +1,9 @@
 -r requirements.txt
 
-Flask-Testing
+blinker
 coverage
 flake8
+Flask-Testing
+mock
+oauthlib
+requests-mock

@@ -8,6 +8,8 @@ from flask import Flask, render_template, session, request, redirect, url_for, R
 from flask_sqlalchemy import SQLAlchemy
 from pylti.flask import lti
 import requests
+from requests.exceptions import HTTPError
+
 
 import settings
 
@@ -82,6 +84,13 @@ def index(lti=lti):
     Main entry point to web application, get all whitelisted LTIs and send the data to the template
     """
 
+    if 'api_key' not in session:
+        app.logger.error('api_key not set')
+        return return_error((
+            'Authentication error: missing API key. Please refresh and try again.'
+            'If this error persists, please contact ***REMOVED***.'
+        ))
+
     # Test API key to see if they need to reauthenticate
     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
     r = requests.get(settings.API_URL + 'users/self', headers=auth_header)
@@ -119,7 +128,6 @@ def index(lti=lti):
             settings.oauth2_id + '&response_type=code&redirect_uri=' + settings.oauth2_uri
         )
 
-    auth_header = {'Authorization': 'Bearer ' + session['api_key']}
     r = requests.get(
         settings.API_URL + 'courses/{0}/external_tools?include_parents=true&per_page=100'.format(
             session['course_id']
@@ -139,9 +147,9 @@ def index(lti=lti):
                 for lti_obj in r.json():
                     ltis_json_list.append(lti_obj)
     else:
-        app.logger.exception('Couldn\'t connect to Canvas')
+        app.logger.exception("Couldn't connect to Canvas")
         return return_error((
-            'Couldn\'t connect to Canvas, please refresh and try again. '
+            "Couldn't connect to Canvas, please refresh and try again. "
             'If this error persists please contact ***REMOVED***.'
         ))
 
@@ -150,6 +158,14 @@ def index(lti=lti):
         course_tool_lti_list = get_lti_list(ltis_json_list, "Course Tool")
         assignment_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
         rce_lti_list = get_lti_list(ltis_json_list, "Rich Content Editor")
+    except HTTPError:
+        msg = 'Error in a response from Canvas. '
+        app.logger.exception(msg)
+        msg += (
+            'Please refresh and try again. If this error persists, please '
+            'contact ***REMOVED***.'
+        )
+        return return_error(msg)
     except (ValueError, IOError):
         msg = 'There is something wrong with the whitelist.json file'
         app.logger.exception(msg)
@@ -286,64 +302,43 @@ def oauth_login(lti=lti):
             # check if user is in the db
             user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
             if user is not None:
-                # update the current user's expiration time in db
-                user.refresh_key = session['refresh_token']
-                user.expires_in = session['expires_in']
-                db.session.add(user)
-                db.session.commit()
-
-                # check that the expires_in time got updated
-                check_expiration = Users.query.filter_by(
-                    user_id=int(session['canvas_user_id'])
-                ).first()
-
-                # compare what was saved to the old session
-                # if it didn't update, error
-                if check_expiration.expires_in == int(session['expires_in']):
-                    return redirect(url_for('index'))
-                else:
-                    app.logger.error(
+                try:
+                    # update the current user's expiration time in db
+                    user.refresh_key = session['refresh_token']
+                    user.expires_in = session['expires_in']
+                    db.session.add(user)
+                    db.session.commit()
+                except Exception:
+                    app.logger.exception(
                         'Error in updating user\'s expiration time in the db:\n {}'.format(session)
                     )
                     return return_error(
                         'Authentication error, please refresh and try again. '
                         'If this error persists, please contact ***REMOVED***.'
                     )
+
+                return redirect(url_for('index'))
             else:
-                # add new user to db
-                new_user = Users(
-                    session['canvas_user_id'],
-                    session['refresh_token'],
-                    session['expires_in']
-                )
-                db.session.add(new_user)
-                db.session.commit()
-
-                # check that the user got added
-                check_user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
-
-                if check_user is None:
+                try:
+                    # add new user to db
+                    new_user = Users(
+                        session['canvas_user_id'],
+                        session['refresh_token'],
+                        session['expires_in']
+                    )
+                    db.session.add(new_user)
+                    db.session.commit()
+                except Exception:
                     # Error in adding user to the DB
-                    app.logger.error(
+                    app.logger.exception(
                         'Error in adding user to db: \n {}'.format(session)
                     )
                     return return_error((
                         'Authentication error, please refresh and try again. '
                         'If this error persists, please contact ***REMOVED***.'
                     ))
-                else:
-                    return redirect(url_for('index'))
 
-            # got beyond if/else
-            # error in adding or updating db
-
-            app.logger.error(
-                'Error in adding or updating user to db: \n {}'.format(session)
-            )
-            return return_error((
-                'Authentication error, please refresh and try again. '
-                'If this error persists, please contact ***REMOVED***.'
-            ))
+                return redirect(url_for('index'))
 
     app.logger.warning(
         (
@@ -416,16 +411,14 @@ def refresh_access_token(user):
     current_time = int(time.time())
     new_expiration_date = current_time + response.json()['expires_in']
 
-    # Update expiration date in db
-    user.expires_in = new_expiration_date
-    db.session.commit()
-
-    # Confirm that expiration date has been updated
-    updated_user = Users.query.filter_by(user_id=int(user.user_id)).first()
-    if updated_user.expires_in != new_expiration_date:
+    try:
+        # Update expiration date in db
+        user.expires_in = new_expiration_date
+        db.session.commit()
+    except Exception:
         readable_expires_in = time.strftime(
             '%a, %d %b %Y %H:%M:%S',
-            time.localtime(updated_user.expires_in)
+            time.localtime(user.expires_in)
         )
         readable_new_expiration = time.strftime(
             '%a, %d %b %Y %H:%M:%S',
@@ -458,7 +451,6 @@ def auth(lti=lti):
     # Try to grab the user
     user = Users.query.filter_by(user_id=int(session['canvas_user_id'])).first()
 
-    # Found a user
     if not user:
         # not in db, go go oauth!!
         app.logger.info(
@@ -518,17 +510,6 @@ def auth(lti=lti):
                     settings.oauth2_id + '&response_type=code&redirect_uri=' +
                     settings.oauth2_uri
                 )
-
-    app.logger.warning(
-        'Some other error, {0} {1}'.format(
-            session['canvas_user_id'],
-            session['course_id']
-        )
-    )
-    return return_error((
-        'Authentication error, please refresh and try again. '
-        'If this error persists, please contact ***REMOVED***.'
-    ))
 
 
 @app.route('/get_sessionless_url/<lti_id>/<is_course_nav>')
@@ -608,18 +589,13 @@ def get_lti_list(ltis_json_list, category):
         app.logger.error('whitelist.json does not exist')
         raise IOError('whitelist.json does not exist')
 
-    if json_data is None:
-        # this lti threw an exception when talking to Canvas
-        app.logger.error(
-            'Canvas exception: \n LTI List: {} \n'.format(lti_list)
-        )
-        return return_error((
-            'Couldn\'t connect to Canvas, please refresh and try again. '
-            'If this error persists, please contact ***REMOVED***.'
-        ))
+    if not json_data:
+        app.logger.error('whitelist.json has invalid contents: {}'.format(json_data))
+        raise ValueError('whitelist.json is empty')
 
     # check if the LTI is in the whitelist
     for data in json_data:
+        # TODO: find better way of checking ltis_json_list than converting to string
         if data['name'] not in str(ltis_json_list):
             continue
 
@@ -634,10 +610,10 @@ def get_lti_list(ltis_json_list, category):
 
             sessionless_launch_url = None
             lti_id = lti_obj['id']
-            lti_course_navigation = False
-            if data['is_launchable']:
-                if lti_obj.get('course_navigation'):
-                    lti_course_navigation = True
+            lti_course_navigation = 'course_navigation' in lti_obj
+            is_launchable = data.get('is_launchable', False)
+            if is_launchable:
+                if lti_course_navigation:
                     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
                     # get sessionless launch url for things that come from course nav
                     url = (
@@ -652,22 +628,9 @@ def get_lti_list(ltis_json_list, category):
                         ),
                         headers=auth_header
                     )
-                    if r.status_code >= 400:
-                        app.logger.error(
-                            (
-                                'Bad response while getting a sessionless '
-                                'launch url:\n {0} {1}\n LTI: {2} \n'
-                            ).format(
-                                r.status_code, r.url, lti_obj
-                            )
-                        )
-                        return return_error((
-                            'Error in a response from Canvas, please '
-                            'refresh and try again. If this error persists, '
-                            'please contact ***REMOVED***.'
-                        ))
-                    else:
-                        sessionless_launch_url = r.json()['url']
+                    r.raise_for_status()
+
+                    sessionless_launch_url = r.json()['url']
 
                 if sessionless_launch_url is None:
                     auth_header = {'Authorization': 'Bearer ' + session['api_key']}
@@ -678,22 +641,9 @@ def get_lti_list(ltis_json_list, category):
                             session['course_id'], lti_id
                         ), headers=auth_header
                     )
-                    if r.status_code >= 400:
-                        app.logger.error(
-                            (
-                                'Bad response while getting a sessionless '
-                                'launch url:\n {0} {1}\n LTI: {2} \n'
-                            ).format(
-                                r.status_code, r.url, lti_obj
-                            )
-                        )
-                        return return_error((
-                            'Error in a response from Canvas, please '
-                            'refresh and try again. If this error persists, '
-                            'please contact ***REMOVED***.'
-                        ))
-                    else:
-                        sessionless_launch_url = r.json()['url']
+                    r.raise_for_status()
+
+                    sessionless_launch_url = r.json()['url']
 
             lti_list.append({
                 'display_name': data['display_name'],
@@ -705,7 +655,7 @@ def get_lti_list(ltis_json_list, category):
                 'screenshot': 'screenshots/' + data['screenshot'],
                 'logo': data['logo'],
                 'filter_by': data['filter_by'],
-                'is_launchable': data['is_launchable'],
+                'is_launchable': is_launchable,
                 'docs_url': data['docs_url'],
                 'category': data['category']
             })
