@@ -1,4 +1,5 @@
 # config/settings
+logs
 settings.py
 whitelist.json
 
