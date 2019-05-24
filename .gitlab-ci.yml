@@ -8,5 +8,6 @@ before_script:
 run-test:
   script:
     - flake8
-    - mdl *.md
+    - mdl .
     - coverage run -m unittest discover
+    - coverage report
