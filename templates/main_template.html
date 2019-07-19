@@ -54,21 +54,6 @@
 {% endwith %}
 {% endif %}
 
-
-<div class="row" style="margin-top: 20px;">
-	<div class="col-md-8 ml-auto mr-auto">
-		<hr />
-	</div>
-</div>
-
-<div class="row boxed-section">
-	<h2 class="text-center section_headline" id="students_of_concern">Students of Concern Resources</h2>
-
-	<div class="col-md-12 ml-auto mr-auto" style="padding: 30px 40px;">
-		<p>***REMOVED***</p>
-
-		{% include 'cares_list.html' %}
-	</div>
-</div>
+{% include "custom_tools.html" ignore missing %}
 
 {% endblock content %}

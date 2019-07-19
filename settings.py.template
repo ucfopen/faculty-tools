@@ -1,6 +1,9 @@
 # Title of the tool. Appears in the <title> element, headers, and configuration XML
 TOOL_TITLE = 'Faculty Tools'
 
+# Which theme directory to use. Leave blank for default.
+THEME_DIR = ''
+
 # Canvas instance URL. ex: https://example.instructure.com/
 BASE_URL = 'https://example.instructure.com/'
 API_URL = BASE_URL + 'api/v1/'

@@ -4,8 +4,9 @@ import json
 import os
 import time
 
-from flask import Flask, render_template, session, request, redirect, url_for, Response
+from flask import Flask, render_template, session, request, redirect, url_for, Response, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+import jinja2
 from pylti.flask import lti
 import requests
 from requests.exceptions import HTTPError
@@ -17,6 +18,14 @@ app = Flask(__name__)
 app.config.from_object(settings.configClass)
 app.secret_key = settings.secret_key
 db = SQLAlchemy(app)
+
+# Load theme templates, if applicable
+if settings.THEME_DIR:
+    theme_dirs = ['themes/' + settings.THEME_DIR + '/templates', 'templates']
+else:
+    theme_dirs = ['templates']
+my_loader = jinja2.ChoiceLoader([jinja2.FileSystemLoader(theme_dirs)])
+app.jinja_loader = my_loader
 
 # Logging
 handler = RotatingFileHandler(
@@ -63,6 +72,35 @@ def title_utility_processor():
     return dict(title=title())
 
 
+@app.context_processor
+def theme_static_files_processor():
+
+    def theme_static_files(folder):
+        if not settings.THEME_DIR:
+            return list()
+
+        try:
+            all_files = os.listdir(
+                "themes/{theme_dir}/static/{folder}".format(
+                    theme_dir=settings.THEME_DIR, folder=folder
+                )
+            )
+
+            css_files = list()
+            for file in all_files:
+                if file.endswith(".{folder}".format(folder=folder)):
+                    css_files.append(file)
+        except OSError:
+            return list()
+
+        return(css_files)
+
+    return {
+        "theme_static_css": theme_static_files("css"),
+        "theme_static_js": theme_static_files("js"),
+    }
+
+
 def return_error(msg):
     return render_template('error.html', msg=msg)
 
@@ -74,6 +112,12 @@ def error(exception=None):
         'Authentication error, please refresh and try again. If this error '
         'persists, please contact ***REMOVED***.'
     ))
+
+
+@app.route('/themes/static/<path:filename>')
+def theme_static(filename):
+    static_dir = 'themes/{theme_dir}/static'.format(theme_dir=settings.THEME_DIR)
+    return send_from_directory(static_dir, filename)
 
 
 # Web Views / Routes
