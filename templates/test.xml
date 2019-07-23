@@ -13,7 +13,7 @@
     <blti:icon></blti:icon>
     <blti:launch_url>{{ url }}auth</blti:launch_url>
     <blti:extensions platform="canvas.instructure.com">
-      <lticm:property name="tool_id">aaaa</lticm:property>
+      <lticm:property name="tool_id">faculty_tools</lticm:property>
       <lticm:property name="privacy_level">public</lticm:property>
       <lticm:options name="course_navigation">
         <lticm:property name="url">{{ url }}auth</lticm:property>
