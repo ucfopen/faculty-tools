@@ -4,55 +4,29 @@
 <div class="container-fluid jump-to-section">
 	<h2>Jump to section:</h2>
 	<ul>
-		<li><a class="btn btn-primary" href="#all_tools">Course Tools</a></li>
-		<li><a class="btn btn-primary" href="#assignment_tools">Assignment Editor Tools</a></li>
-		<li><a class="btn btn-primary" href="#richcontenteditor_tools">Rich Content Editor Tools</a></li>
-		<li><a class="btn btn-primary" href="#students_of_concern">Students of Concern Resources</a></li>
+		{% for category in tools_by_category %}
+		<li><a class="btn btn-primary" href="#{{ category|slugify}}">{{ category }}</a></li>
+		{% endfor %}
+		{% include "extra_links.html" ignore missing %}
 	</ul>
 </div>
-{% endblock %}
+{% endblock pre_content %}
 
 {% block content %}
 
-{% if course_tool_lti_list %}
+{% for category, tools in tools_by_category.items() %}
 <div class="row">
 	<div class="col-md-8 ml-auto mr-auto">
-		<h2 class="text-center section_headline" id="all_tools">Course Tools</h2>
+		<h2 class="text-center section_headline" id="{{ category|slugify}}">{{ category }}</h2>
 		<hr />
 	</div>
 </div>
 
-{% with ltis=course_tool_lti_list %}
-	{% include 'lti_list.html' %}
+{% with ltis=tools %}
+	{% include "lti_list.html" %}
 {% endwith %}
-{% endif %}
 
-{% if assignment_lti_list %}
-<div class="row">
-	<div class="col-md-8 ml-auto mr-auto">
-		<h2 class="text-center section_headline" id="assignment_tools">Assignment Editor Tools</h2>
-		<hr />
-	</div>
-</div>
-
-{% with ltis=assignment_lti_list %}
-	{% include 'lti_list.html' %}
-{% endwith %}
-{% endif %}
-
-{% if rce_lti_list %}
-<div class="row">
-	<div class="col-md-8 ml-auto mr-auto">
-		<h2 class="text-center section_headline" id="richcontenteditor_tools">Rich Content Editor Tools</h2>
-		<hr />
-	</div>
-</div>
-
-
-{% with ltis=rce_lti_list %}
-	{% include 'lti_list.html' %}
-{% endwith %}
-{% endif %}
+{% endfor %}
 
 {% include "custom_tools.html" ignore missing %}
 
