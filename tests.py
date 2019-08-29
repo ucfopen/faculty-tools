@@ -37,6 +37,7 @@ class LTITests(flask_testing.TestCase):
         settings.oauth2_id = "10000000000001"
         settings.oauth2_uri = "oauthlogin"
         settings.GOOGLE_ANALYTICS = "123abc"
+        settings.THEME_DIR = "test_theme"
 
     def setUp(self):
         with self.app.test_request_context():
@@ -84,7 +85,6 @@ class LTITests(flask_testing.TestCase):
         new_url = signed_url[len(base_url) :]
         return new_url
 
-    @patch("settings.THEME_DIR", "test_theme")
     def test_select_theme_dirs(self, m):
         theme_dirs = lti.select_theme_dirs()
 
@@ -131,6 +131,7 @@ class LTITests(flask_testing.TestCase):
     @patch("os.listdir")
     def test_theme_static_files_processor_oserror(self, m, mocked_listdir):
         mocked_listdir.side_effect = OSError
+
         files = lti.theme_static_files_processor()
 
         self.assertIsInstance(files, dict)
