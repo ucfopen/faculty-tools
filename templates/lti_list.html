@@ -12,14 +12,14 @@
 					<div class="card-body">
 						<div class="image-height">
 							<div class="text-center">
-								<img class="logo text-center" src={{ url_for('static', filename='img/logos/'+lti.logo) }} alt="{{lti.name}} logo" />
+								<img class="logo text-center" src="{{ url_for('theme_static', filename='img/logos/'+lti.logo) }}" alt="{{lti.name}} logo" />
 							</div>
 						</div>
 
 						<p class="card-text">{{lti.desc}}</p>
 
 						<div class="text-center card-img-top-container">
-							<img class="card-img-top img-fluid margin-10" src={{ url_for('static', filename='img/'+lti.screenshot) }} alt="Screenshot" />
+							<img class="card-img-top img-fluid margin-10" src="{{ url_for('theme_static', filename='img/'+lti.screenshot) }}" alt="Screenshot" />
 						</div>
 
 						<div class="buttons">
