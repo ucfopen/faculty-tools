@@ -3,6 +3,12 @@ logs
 settings.py
 whitelist.json
 
+# local theming
+themes/*
+
+# allow themes directory
+!themes/.keep
+
 # system
 *.DS_Store
 
@@ -104,6 +110,7 @@ celerybeat-schedule
 .env
 .venv
 env/
+env3/
 venv/
 ENV/
 env.bak/

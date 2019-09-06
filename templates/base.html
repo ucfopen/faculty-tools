@@ -8,6 +8,10 @@
 	<link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i,900" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
 
+	{% for css_file in theme_static_css %}
+		<link rel="stylesheet" type="text/css" href="{{ url_for('theme_static', filename='css/' + css_file ) }}">
+	{% endfor %}
+
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -15,6 +19,10 @@
 
 	<script src="https://use.fontawesome.com/60e3e19420.js"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+	{% for js_file in theme_static_js %}
+		<script type="text/javascript" src="{{ url_for('theme_static', filename='js/' + js_file ) }}"></script>
+	{% endfor %}
 
 	<title>{{ title }}</title>
 

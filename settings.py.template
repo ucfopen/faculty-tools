@@ -1,60 +1,63 @@
 # Title of the tool. Appears in the <title> element, headers, and configuration XML
-TOOL_TITLE = 'Faculty Tools'
+TOOL_TITLE = "Faculty Tools"
+
+# Which theme directory to use. Leave blank for default.
+THEME_DIR = ""
 
 # Canvas instance URL. ex: https://example.instructure.com/
-BASE_URL = 'https://example.instructure.com/'
-API_URL = BASE_URL + 'api/v1/'
+BASE_URL = "https://example.instructure.com/"
+API_URL = BASE_URL + "api/v1/"
 
 # Secret key to sign Flask sessions with. KEEP THIS SECRET!
-secret_key = ''
+secret_key = ""
 
 # LTI consumer key and shared secret
-CONSUMER_KEY = 'key'
-SHARED_SECRET = 'secret'
+CONSUMER_KEY = "key"
+SHARED_SECRET = "secret"
 
 # Configuration for pylti library. Uses the above key and secret
 PYLTI_CONFIG = {
-    'consumers': {
+    "consumers": {
         CONSUMER_KEY: {
-            'secret': SHARED_SECRET
+            "secret": SHARED_SECRET
         }
     },
     # Custom configurable roles
-    'roles': {
-        'staff': [
-            'urn:lti:instrole:ims/lis/Administrator',
-            'Instructor',
-            'ContentDeveloper',
-            'urn:lti:role:ims/lis/TeachingAssistant'
+    "roles": {
+        "staff": [
+            "urn:lti:instrole:ims/lis/Administrator",
+            "Instructor",
+            "ContentDeveloper",
+            "urn:lti:role:ims/lis/TeachingAssistant",
         ]
-    }
+    },
 }
 
 # The "Oauth2 Redirect URI" that you provided to Instructure.
-oauth2_uri = ''  # ex. 'https://localhost:5000/oauthlogin'
+oauth2_uri = ""  # ex. 'https://localhost:5000/oauthlogin'
 # The Client_ID Instructure gave you
-oauth2_id = ''
+oauth2_id = ""
 # The Secret Instructure gave you
-oauth2_key = ''
+oauth2_key = ""
 
 # Logging configuration
 LOG_MAX_BYTES = 10000
 LOG_BACKUP_COUNT = 1
-ERROR_LOG = 'logs/faculty-tools.log'
+ERROR_LOG = "logs/faculty-tools.log"
 
-whitelist = 'whitelist.json'
+whitelist = "whitelist.json"
 
 # Google Analytics Tracking ID (optional)
-GOOGLE_ANALYTICS = ''
+GOOGLE_ANALYTICS = ""
 
 
 def select_db(x):
     return {
-        'DevelopmentConfig': 'sqlite:///test.db',
-        'Config': 'sqlite:///test.db',
-        'BaseConfig': 'sqlite:///test.db',
-        'TestingConfig': 'sqlite:///test.db'
-    }.get(x, 'sqlite:///test2.db')
+        "DevelopmentConfig": "sqlite:///test.db",
+        "Config": "sqlite:///test.db",
+        "BaseConfig": "sqlite:///test.db",
+        "TestingConfig": "sqlite:///test.db",
+    }.get(x, "sqlite:///test2.db")
 
 
-configClass = 'config.DevelopmentConfig'
+configClass = "config.DevelopmentConfig"
