@@ -1255,7 +1255,7 @@ class UtilsTests(unittest.TestCase):
     @patch("canvasapi.canvas.Canvas.get_course")
     @patch("canvasapi.course.Course.get_external_tools")
     def test_filter_tool_list(self, mock_get_course, mock_get_external_tools):
-        # TODO: figure out the best way to mock canvasapi objects to finish testing this methods
+        # TODO: figure out the best way to mock canvasapi objects to finish testing this method
         pass
 
     def test_slugify(self):
