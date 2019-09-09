@@ -19,6 +19,7 @@ from flask_sqlalchemy import SQLAlchemy
 import jinja2
 from pylti.flask import lti
 import requests
+from requests.exceptions import HTTPError
 
 from utils import filter_tool_list, slugify
 import settings
@@ -322,6 +323,16 @@ def xml():
 def oauth_login(lti=lti):
 
     code = request.args.get("code")
+
+    if code is None:
+        app.logger.warning("No `code` response from Canvas. User probaly hit 'Cancel'.")
+        return return_error(
+            (
+                "Authentication error, please refresh and try again. If this error "
+                "persists, please contact ***REMOVED***."
+            )
+        )
+
     payload = {
         "grant_type": "authorization_code",
         "client_id": settings.oauth2_id,
@@ -331,15 +342,10 @@ def oauth_login(lti=lti):
     }
     r = requests.post(settings.BASE_URL + "login/oauth2/token", data=payload)
 
-    if r.status_code == 500:
-        # Canceled oauth (clicked cancel instead of Authorize) or server error
-
-        app.logger.error(
-            (
-                "Status code 500 from oauth, authentication error\n "
-                "User ID: None Course: None \n {0} \n Request headers: {1} {2}"
-            ).format(r.url, r.headers, session)
-        )
+    try:
+        r.raise_for_status()
+    except HTTPError:
+        app.logger.exception("Error status from oauth, authentication error")
 
         return return_error(
             (
@@ -441,7 +447,21 @@ def refresh_access_token(user):
     }
     response = requests.post(settings.BASE_URL + "login/oauth2/token", data=payload)
 
-    if "access_token" not in response.json():
+    try:
+        response.raise_for_status()
+    except HTTPError:
+        app.logger.exception("Failed refresh. Probably bad refresh token.")
+        return {"access_token": None, "expiration_date": None}
+
+    try:
+        response_json = response.json()
+    except ValueError:
+        app.logger.exception(
+            "Unable to load JSON response of refresh. Possibly bad refresh token."
+        )
+        return {"access_token": None, "expiration_date": None}
+
+    if "access_token" not in response_json:
         app.logger.warning(
             (
                 "Access token not in json. Bad api key or refresh token.\n"
@@ -453,10 +473,10 @@ def refresh_access_token(user):
         )
         return {"access_token": None, "expiration_date": None}
 
-    api_key = response.json()["access_token"]
+    api_key = response_json["access_token"]
     app.logger.info("New access token created\n User: {0}".format(user.user_id))
 
-    if "expires_in" not in response.json():
+    if "expires_in" not in response_json:
         app.logger.warning(
             (
                 "expires_in not in json. Bad api key or refresh token.\n"
@@ -469,7 +489,7 @@ def refresh_access_token(user):
         return {"access_token": None, "expiration_date": None}
 
     current_time = int(time.time())
-    new_expiration_date = current_time + response.json()["expires_in"]
+    new_expiration_date = current_time + response_json["expires_in"]
 
     try:
         # Update expiration date in db
