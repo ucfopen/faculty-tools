@@ -1,0 +1,9 @@
+-r requirements.txt
+
+blinker
+coverage
+flake8
+Flask-Testing
+mock
+oauthlib
+requests-mock

@@ -45,7 +45,7 @@ $(document).ready(function() {
     // resize containing iframe height
     function resizeFrame(){
         console.log("resizing frame...");
-        var default_height = $('body').height() + 50;
+        var default_height = $('body').height();
         default_height = default_height > 500 ? default_height : 500;
 
         // IE 8 & 9 only support string data, so send objects as string
