@@ -137,7 +137,7 @@ def error(exception=None):
     return return_error(
         (
             "Authentication error, please refresh and try again. If this error "
-            "persists, please contact ***REMOVED***."
+            "persists, please contact support."
         )
     )
 
@@ -161,7 +161,7 @@ def index(lti=lti):
         return return_error(
             (
                 "Authentication error: missing API key. Please refresh and try again."
-                "If this error persists, please contact ***REMOVED***."
+                "If this error persists, please contact support."
             )
         )
 
@@ -191,7 +191,7 @@ def index(lti=lti):
         return return_error(
             (
                 "You are not enrolled in this course as a Teacher or Designer. "
-                "If this error persists, please contact ***REMOVED***."
+                "If this error persists, please contact support."
             )
         )
 
@@ -232,7 +232,7 @@ def index(lti=lti):
         return return_error(
             (
                 "Couldn't connect to Canvas, please refresh and try again. "
-                "If this error persists please contact ***REMOVED***."
+                "If this error persists please contact support."
             )
         )
     except (ValueError, IOError):
@@ -329,7 +329,7 @@ def oauth_login(lti=lti):
         return return_error(
             (
                 "Authentication error, please refresh and try again. If this error "
-                "persists, please contact ***REMOVED***."
+                "persists, please contact support."
             )
         )
 
@@ -350,7 +350,7 @@ def oauth_login(lti=lti):
         return return_error(
             (
                 "Authentication error, please refresh and try again. If this error "
-                "persists, please contact ***REMOVED***."
+                "persists, please contact support."
             )
         )
 
@@ -384,7 +384,7 @@ def oauth_login(lti=lti):
                     )
                     return return_error(
                         "Authentication error, please refresh and try again. "
-                        "If this error persists, please contact ***REMOVED***."
+                        "If this error persists, please contact support."
                     )
 
                 return redirect(url_for("index"))
@@ -406,7 +406,7 @@ def oauth_login(lti=lti):
                     return return_error(
                         (
                             "Authentication error, please refresh and try again. "
-                            "If this error persists, please contact ***REMOVED***."
+                            "If this error persists, please contact support."
                         )
                     )
 
@@ -423,7 +423,7 @@ def oauth_login(lti=lti):
     return return_error(
         (
             "Authentication error, please refresh and try again. If this error "
-            "persists, please contact ***REMOVED***."
+            "persists, please contact support."
         )
     )
 
@@ -628,7 +628,7 @@ def get_sessionless_url(lti_id, is_course_nav, lti=lti):
                 (
                     "Error in a response from Canvas, please "
                     "refresh and try again. If this error persists, "
-                    "please contact ***REMOVED***."
+                    "please contact support."
                 )
             )
         else:
@@ -655,7 +655,7 @@ def get_sessionless_url(lti_id, is_course_nav, lti=lti):
                 (
                     "Error in a response from Canvas, please "
                     "refresh and try again. If this error persists, "
-                    "please contact ***REMOVED***."
+                    "please contact support."
                 )
             )
         else:
