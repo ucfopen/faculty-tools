@@ -1,0 +1,13 @@
+before_script:
+  - apk add --no-cache gcc git libc-dev make py-mysqldb py-pip ruby-dev
+  - pip install -r test_requirements.txt
+  - gem install --no-document json mdl
+  - cp settings.py.template settings.py; cp whitelist.json.template whitelist.json
+  - mkdir logs; touch logs/faculty-tools.log
+
+run-test:
+  script:
+    - flake8
+    - mdl .
+    - coverage run -m unittest discover
+    - coverage report

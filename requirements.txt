@@ -1,6 +1,6 @@
-Flask
-Flask-SQLAlchemy
-Flask-Testing
-mysql-python
+canvasapi==0.14.0
+Flask==1.1.1
+Flask-SQLAlchemy==2.4.0
+mysql-python==1.2.5
 -e git+https://github.com/ucfcdl/pylti.git@roles#egg=PyLTI
-requests
+requests==2.22.0
