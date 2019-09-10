@@ -25,28 +25,28 @@ documentation for creating a new developer key](https://community.canvaslms.com/
 
 Add the tools you want instructors and faculty to see to `whitelist.json`.
 
-```json
+```js
 [
     {
-        # The name of the tool from within the Settings page
+        // The name of the tool from within the Settings page
         "name": "Installed Tool Name",
-        # The unique tool id, not currently used
+        // The unique tool id, not currently used
         "tool_id": "tool_id",
-        # Allows viewable name to be different from installed name, ie: Attendance vs. RollCall
+        // Allows viewable name to be different from installed name, ie: Attendance vs. RollCall
         "display_name": "Name to Display",
-        # Short description of the tool to be displayed to the user
+        // Short description of the tool to be displayed to the user
         "desc": "Tool Description",
-        # Filename of screenshot. Must be in static/img/screenshots
+        // Filename of screenshot. Must be in static/img/screenshots
         "screenshot": "screenshot.png",
-        # Filename of logo. Must be in static/img/logos
+        // Filename of logo. Must be in static/img/logos
         "logo": "logo.svg",
-        # Link to the tool's documentation. Appears as the Learn More button
+        // Link to the tool's documentation. Appears as the Learn More button
         "docs_url": "https://example.com/tool/docs/",
-        # Turns off/on launch button inside Faculty Tools - Useful for docs
+        // Turns off/on launch button inside Faculty Tools - Useful for docs
         "is_launchable": true,
-        # What category to put the tool in. Options: Course Tool, Assignment Editor, Rich Content Editor
+        // What category to put the tool in. Options: Course Tool, Assignment Editor, Rich Content Editor
         "category": "Course Tool",
-        # For future use
+        // For future use
         "filter_by": ["all"],
         "allowed_roles": [""],
     },
