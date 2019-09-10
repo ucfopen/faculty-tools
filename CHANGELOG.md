@@ -27,6 +27,6 @@
 
 - Initial Release
 
-[Unreleased]: https://github.com/ucfopen/canvasapi/compare/v1.2.0...master
-[1.2.0]: https://github.com/ucfopen/canvasapi/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/ucfopen/canvasapi/compare/v1.0.0...v1.1.0
+[Unreleased]: https://github.com/ucfopen/faculty-tools/compare/v1.2.0...master
+[1.2.0]: https://github.com/ucfopen/faculty-tools/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/ucfopen/faculty-tools/compare/v1.0.0...v1.1.0
