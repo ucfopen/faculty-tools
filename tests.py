@@ -1,6 +1,6 @@
 import logging
 import unittest
-from urllib import urlencode
+from urllib.parse import urlencode
 
 import canvasapi
 import oauthlib.oauth1
@@ -220,7 +220,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_template_used("error.html")
 
         self.assertIn(
-            "Authentication error, please refresh and try again", response.data
+            b"Authentication error, please refresh and try again", response.data
         )
 
     def test_index_api_key_none(self, m):
@@ -234,7 +234,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_200(response)
         self.assert_template_used("error.html")
         self.assertIn(
-            "Authentication error: missing API key. Please refresh and try again.",
+            b"Authentication error: missing API key. Please refresh and try again.",
             response.data,
         )
 
@@ -276,7 +276,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_200(response)
         self.assert_template_used("error.html")
         self.assertIn(
-            "You are not enrolled in this course as a Teacher or Designer.",
+            b"You are not enrolled in this course as a Teacher or Designer.",
             response.data,
         )
 
@@ -322,7 +322,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_200(response)
         self.assert_template_used("error.html")
         self.assertIn(
-            "Couldn&#39;t connect to Canvas, please refresh and try again",
+           b"Couldn&#39;t connect to Canvas, please refresh and try again",
             response.data,
         )
 
@@ -366,7 +366,7 @@ class LTITests(flask_testing.TestCase):
 
         self.assert_template_used("error.html")
         self.assertIn(
-            "There is something wrong with the whitelist.json file", response.data
+            b"There is something wrong with the whitelist.json file", response.data
         )
 
     @patch("lti.filter_tool_list")
@@ -410,7 +410,7 @@ class LTITests(flask_testing.TestCase):
         response = self.client.get(self.generate_launch_request(url_for("index")))
 
         self.assert_template_used("error.html")
-        self.assertIn("Couldn&#39;t connect to Canvas", response.data)
+        self.assertIn(b"Couldn&#39;t connect to Canvas", response.data)
 
     def test_index(self, m):
         with self.client.session_transaction() as sess:
@@ -472,7 +472,7 @@ class LTITests(flask_testing.TestCase):
         self.assertIn("checks", json_response)
         self.assertIsInstance(json_response["checks"], dict)
         self.assertEqual(len(json_response["checks"]), 4)
-        for check, is_ok in json_response["checks"].items():
+        for check, is_ok in list(json_response["checks"].items()):
             self.assertTrue(is_ok)
         self.assertIn("healthy", json_response)
         self.assertTrue(json_response["healthy"])
@@ -499,7 +499,7 @@ class LTITests(flask_testing.TestCase):
         self.assertIn("checks", json_response)
         self.assertIsInstance(json_response["checks"], dict)
         self.assertEqual(len(json_response["checks"]), 4)
-        for check, is_ok in json_response["checks"].items():
+        for check, is_ok in list(json_response["checks"].items()):
             self.assertFalse(is_ok)
         self.assertIn("healthy", json_response)
         self.assertFalse(json_response["healthy"])
@@ -530,7 +530,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_200(response)
         self.assert_template_used("error.html")
         self.assertIn(
-            "Authentication error, please refresh and try again.", response.data
+            b"Authentication error, please refresh and try again.", response.data
         )
 
     def test_oauth_login_no_access_token(self, m):
@@ -552,7 +552,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_200(response)
         self.assert_template_used("error.html")
         self.assertIn(
-            "Authentication error, please refresh and try again.", response.data
+            b"Authentication error, please refresh and try again.", response.data
         )
 
     def test_oauth_login_new_user(self, m):
@@ -650,7 +650,7 @@ class LTITests(flask_testing.TestCase):
 
         self.assert_template_used("error.html")
         self.assertIn(
-            "Authentication error, please refresh and try again.", response.data
+            b"Authentication error, please refresh and try again.", response.data
         )
 
     def test_oauth_login_existing_user(self, m):
@@ -758,7 +758,7 @@ class LTITests(flask_testing.TestCase):
             self.assert_200(response)
             self.assert_template_used("error.html")
             self.assertIn(
-                "Authentication error, please refresh and try again.", response.data
+                b"Authentication error, please refresh and try again.", response.data
             )
 
     # refresh_access_token
@@ -1149,7 +1149,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_200(response)
         self.assert_template_used("error.html")
         self.assertIn(
-            "Error in a response from Canvas, please refresh and try again.",
+            b"Error in a response from Canvas, please refresh and try again.",
             response.data,
         )
 
@@ -1178,7 +1178,7 @@ class LTITests(flask_testing.TestCase):
         )
 
         self.assert_200(response)
-        self.assertEqual(response.data, launch_url)
+        self.assertEqual(response.data, launch_url.encode())
 
     def test_get_sessionless_url_not_course_nav_fail(self, m):
         with self.client.session_transaction() as sess:
@@ -1204,7 +1204,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_200(response)
         self.assert_template_used("error.html")
         self.assertIn(
-            "Error in a response from Canvas, please refresh and try again.",
+            b"Error in a response from Canvas, please refresh and try again.",
             response.data,
         )
 
@@ -1233,7 +1233,7 @@ class LTITests(flask_testing.TestCase):
         )
 
         self.assert_200(response)
-        self.assertEqual(response.data, launch_url)
+        self.assertEqual(response.data, launch_url.encode())
 
 
 class UtilsTests(unittest.TestCase):
@@ -1243,13 +1243,13 @@ class UtilsTests(unittest.TestCase):
         settings.whitelist = "whitelist.json"
 
     def test_filter_tool_list_empty_file(self):
-        with self.assertRaisesRegexp(ValueError, r"No JSON object could be decoded"):
-            with patch("__builtin__.open", mock_open(read_data="")):
+        with self.assertRaisesRegex(ValueError, r"No JSON object could be decoded"):
+            with patch("builtins.open", mock_open(read_data="")):
                 utils.filter_tool_list(1, "password")
 
     def test_filter_tool_list_empty_data(self):
-        with self.assertRaisesRegexp(ValueError, r"whitelist\.json is empty"):
-            with patch("__builtin__.open", mock_open(read_data="{}")):
+        with self.assertRaisesRegex(ValueError, r"whitelist\.json is empty"):
+            with patch("builtins.open", mock_open(read_data="{}")):
                 utils.filter_tool_list(1, "password")
 
     @patch("canvasapi.canvas.Canvas.get_course")

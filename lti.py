@@ -300,8 +300,7 @@ def status():
         app.logger.exception("Dev Key check failed.")
 
     # Overall health check - if all checks are True
-    status["healthy"] = all(v is True for k, v in status["checks"].items())
-
+    status["healthy"] = all(v is True for k, v in list(status["checks"].items()))
     return Response(json.dumps(status), mimetype="application/json")
 
 
