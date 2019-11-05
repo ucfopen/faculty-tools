@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 import logging
 import unittest
 from urllib.parse import urlencode
@@ -322,7 +323,7 @@ class LTITests(flask_testing.TestCase):
         self.assert_200(response)
         self.assert_template_used("error.html")
         self.assertIn(
-           b"Couldn&#39;t connect to Canvas, please refresh and try again",
+            b"Couldn&#39;t connect to Canvas, please refresh and try again",
             response.data,
         )
 
@@ -472,7 +473,7 @@ class LTITests(flask_testing.TestCase):
         self.assertIn("checks", json_response)
         self.assertIsInstance(json_response["checks"], dict)
         self.assertEqual(len(json_response["checks"]), 4)
-        for check, is_ok in list(json_response["checks"].items()):
+        for check, is_ok in json_response["checks"].items():
             self.assertTrue(is_ok)
         self.assertIn("healthy", json_response)
         self.assertTrue(json_response["healthy"])
@@ -499,7 +500,7 @@ class LTITests(flask_testing.TestCase):
         self.assertIn("checks", json_response)
         self.assertIsInstance(json_response["checks"], dict)
         self.assertEqual(len(json_response["checks"]), 4)
-        for check, is_ok in list(json_response["checks"].items()):
+        for check, is_ok in json_response["checks"].items():
             self.assertFalse(is_ok)
         self.assertIn("healthy", json_response)
         self.assertFalse(json_response["healthy"])
@@ -1178,7 +1179,7 @@ class LTITests(flask_testing.TestCase):
         )
 
         self.assert_200(response)
-        self.assertEqual(response.data, launch_url.encode())
+        self.assertEqual(response.data, launch_url.encode("utf-8"))
 
     def test_get_sessionless_url_not_course_nav_fail(self, m):
         with self.client.session_transaction() as sess:
@@ -1233,7 +1234,7 @@ class LTITests(flask_testing.TestCase):
         )
 
         self.assert_200(response)
-        self.assertEqual(response.data, launch_url.encode())
+        self.assertEqual(response.data, launch_url.encode("utf-8"))
 
 
 class UtilsTests(unittest.TestCase):
@@ -1243,7 +1244,7 @@ class UtilsTests(unittest.TestCase):
         settings.whitelist = "whitelist.json"
 
     def test_filter_tool_list_empty_file(self):
-        with self.assertRaisesRegex(ValueError, r"No JSON object could be decoded"):
+        with self.assertRaises(JSONDecodeError):
             with patch("builtins.open", mock_open(read_data="")):
                 utils.filter_tool_list(1, "password")
 
