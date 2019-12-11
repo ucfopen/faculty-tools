@@ -226,7 +226,9 @@ def index(lti=lti):
     )
 
     try:
-        tools_by_category = filter_tool_list(session["course_id"], session["api_key"])
+        tools_by_category, cagetory_order = filter_tool_list(
+            session["course_id"], session["api_key"]
+        )
     except CanvasException:
         app.logger.exception("Couldn't connect to Canvas")
         return return_error(
@@ -243,6 +245,7 @@ def index(lti=lti):
     return render_template(
         "main_template.html",
         tools_by_category=tools_by_category,
+        category_order=cagetory_order,
         course=session["course_id"],
     )
 
