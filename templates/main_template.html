@@ -4,7 +4,7 @@
 <div class="container-fluid jump-to-section">
 	<h2>Jump to section:</h2>
 	<ul>
-		{% for category in tools_by_category %}
+		{% for category in category_order %}
 		<li><a class="btn btn-primary" href="#{{ category|slugify}}">{{ category }}</a></li>
 		{% endfor %}
 		{% include "extra_links.html" ignore missing %}
@@ -14,18 +14,16 @@
 
 {% block content %}
 
-{% for category, tools in tools_by_category.items() %}
-<div class="row">
-	<div class="col-md-8 ml-auto mr-auto">
-		<h2 class="text-center section_headline" id="{{ category|slugify}}">{{ category }}</h2>
-		<hr />
+{% for category in category_order %}
+	<div class="row">
+		<div class="col-md-8 ml-auto mr-auto">
+			<h2 class="text-center section_headline" id="{{ category|slugify}}">{{ category }}</h2>
+			<hr />
+		</div>
 	</div>
-</div>
-
-{% with ltis=tools %}
-	{% include "lti_list.html" %}
-{% endwith %}
-
+	{% with ltis=tools_by_category[category] %}
+		{% include "lti_list.html" %}
+	{% endwith %}
 {% endfor %}
 
 {% include "custom_tools.html" ignore missing %}
