@@ -1,0 +1,22 @@
+language: python
+matrix:
+  include:
+  - python: 3.7
+  - python: 3.8
+install:
+- pip install -r test_requirements.txt
+- pip install coveralls
+- gem install mdl
+before_script:
+- cp settings.py.template settings.py; cp whitelist.json.template whitelist.json
+- mkdir logs; touch logs/faculty-tools.log
+script:
+- flake8
+- mdl .
+- coverage run -m unittest discover
+after_success:
+- coveralls
+notifications:
+  slack:
+    rooms:
+      secure: F3YANiuNHZjtbgiJC8M1JOKBKhct2EyDEkCitW4FMwrauV0G5XcWKqtqLyRzSchI1LUALn+Dnj032ElGEx7D7cJrXlqC700UjQ4wXv938GQObVnRfTVCVrsktpr5gf077dIXvwcYJYt9ZSu4uIyk+HqyNnHLX4qIL0zhFR8HytoOeXVdik35SQoLJLvorgf4EGfqU8Yo25LUJArp2AB7RceAiMg3QXmi+nDHumFFczURexaYXIDBrRYTyZgfpYP245HOUmEf/LD6G53e6FU+8hiISYr7nE0hTkNkj3U4WNga25//9VIdpjWW8VWd+G7vf8CuhzHYuWEtredoVqNnJDwKE/MLhixleA+1lAEUypAEp+0k3+zMfTk748gdl1buJ/kINjoNqjhLv6MtDH/YTw/eQKEXA+V+odoudDiHUCztHQbCaIXYmIDFnebzO9u/Gz7QJ7PfpBlmUASQru5qTFPL0tmHP/w6/zrog0n07+uwl4qo2d6qxslgtmw4+K0VxGXl1Z8STArEgD6a8KoTZ1N8XDFF0E7KXE3kGYEtLHNoV7Z9OaohB3AFwJaKPTytYyIQ+OPvzYmpyUwRGIWBfRIP7t9qemyOExbYoinw0rF7jCMm7T3gLxkwxHNOCt+Gc1kwfLvuDy8QhQR2iHspMM8NeuDQKVzK4L3FeLx7bTo=

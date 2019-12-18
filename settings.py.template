@@ -41,7 +41,7 @@ oauth2_id = ""
 oauth2_key = ""
 
 # Logging configuration
-LOG_MAX_BYTES = 1024 * 1024 * 5,  # 5 MB
+LOG_MAX_BYTES = 1024 * 1024 * 5  # 5 MB
 LOG_BACKUP_COUNT = 2
 ERROR_LOG = "logs/faculty-tools.log"
 

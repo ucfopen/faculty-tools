@@ -16,7 +16,6 @@ def get_tool_info(whitelist, tool_name):
     """
     for category, category_tools in whitelist.items():
         for tool_info in category_tools:
-            print(tool_info)
             if tool_info.get("name") == tool_name:
                 tool_info.update({"category": category})
                 return tool_info
