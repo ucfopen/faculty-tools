@@ -12,6 +12,7 @@ before_script:
 - mkdir logs; touch logs/faculty-tools.log
 script:
 - flake8
+- black --check .
 - mdl .
 - coverage run -m unittest discover
 after_success:
