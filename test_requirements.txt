@@ -1,5 +1,6 @@
 -r requirements.txt
 
+black
 blinker
 coverage
 flake8
