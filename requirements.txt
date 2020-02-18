@@ -4,3 +4,4 @@ Flask-SQLAlchemy==2.4.1
 mysqlclient
 -e git+https://github.com/ucfcdl/pylti.git@roles#egg=PyLTI
 requests==2.22.0
+Werkzeug>=1.0.0  # Chrome 80 SameSite fix
