@@ -28,8 +28,11 @@ $(document).ready(function() {
             var lti_id = $(this).attr('id');
             var lti_course_navigation =   $(this).data('coursenav')
             $.get( "get_sessionless_url/" + lti_id + "/" + lti_course_navigation, function( data ) {
-              document.body.scrollTop = 0; // For Safari
-              document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+              // IE 8 & 9 only support string data, so send objects as string
+              parent.postMessage(JSON.stringify({
+                subject: "lti.scrollToTop",
+              }), "*");
+
               window.location.href = data;
             });
 
