@@ -173,7 +173,7 @@ def index(lti=lti):
         app.logger.info(
             (
                 "WWW-Authenticate found in headers, or status code was 401. "
-                "Re-rolling oauth.\n {0} \n {1} \n {1}"
+                "Re-rolling oauth.\n {0} \n {1} \n {2}"
             ).format(r.status_code, r.headers, r.url)
         )
 
