@@ -28,6 +28,8 @@ $(document).ready(function() {
             var lti_id = $(this).attr('id');
             var lti_course_navigation =   $(this).data('coursenav')
             $.get( "get_sessionless_url/" + lti_id + "/" + lti_course_navigation, function( data ) {
+              document.body.scrollTop = 0; // For Safari
+              document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
               window.location.href = data;
             });
 
