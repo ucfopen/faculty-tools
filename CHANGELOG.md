@@ -4,6 +4,29 @@
 
 ### General
 
+## [2.0.1] - 2020-05-21
+
+### General
+
+- Frame now scrolls to top when launching a tool
+- Several GitHub-specific changes:
+  - Added CODEOWNERS file
+  - Added issue and PR templates
+  - Removed GitLab CI file
+  - Added Travis CI file
+
+### Bugfixes
+
+- Updated Session cookie to use `SameSite=None; Secure`
+- Fixed a malformed format string
+
+## [2.0.0] - 2019-12-16
+
+### General
+
+- Switched to Python 3
+- Tools are now listed in the order they appear in whitelist.json
+
 ## [1.2.0] - 2019-09-10
 
 ### General
@@ -27,6 +50,8 @@
 
 - Initial Release
 
-[Unreleased]: https://github.com/ucfopen/faculty-tools/compare/v1.2.0...master
+[Unreleased]: https://github.com/ucfopen/faculty-tools/compare/v2.0.1...master
+[2.0.1]: https://github.com/ucfopen/faculty-tools/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/ucfopen/faculty-tools/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/ucfopen/faculty-tools/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ucfopen/faculty-tools/compare/v1.0.0...v1.1.0
