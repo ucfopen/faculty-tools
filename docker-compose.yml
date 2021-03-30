@@ -1,0 +1,35 @@
+version: '3.1'
+
+services:
+  lti:
+    build:
+      context: .
+      args:
+        - "REQUIREMENTS=${REQUIREMENTS}"
+    ports:
+      - "9001:80"
+    env_file:
+      - .env
+    environment:
+      - MODULE_NAME=app
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7
+    volumes:
+      - ft_dbdata:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: faculty_tools
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+    ports:
+      - "33061:3306"
+volumes:
+    ft_dbdata: {}
+
+
+
+

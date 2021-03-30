@@ -1,10 +1,9 @@
 import settings
-
+import os
 
 class Config(object):
     # make the warning shut up until Flask-SQLAlchemy v3 comes out
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_DATABASE_URI = settings.select_db("Config")
 
     PYLTI_CONFIG = settings.PYLTI_CONFIG
 
@@ -13,6 +12,9 @@ class Config(object):
     # Chrome 80 SameSite=None; Secure fix
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "None"
+
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
+
 
 
 class BaseConfig(object):
@@ -21,7 +23,6 @@ class BaseConfig(object):
 
     # make the warning shut up until Flask-SQLAlchemy v3 comes out
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SQLALCHEMY_DATABASE_URI = settings.select_db("BaseConfig")
 
     PYLTI_CONFIG = settings.PYLTI_CONFIG
 
@@ -31,16 +32,23 @@ class BaseConfig(object):
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_SAMESITE = "None"
 
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
+
+
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     TESTING = True
 
-    SQLALCHEMY_DATABASE_URI = settings.select_db("DevelopmentConfig")
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
+
+
 
 
 class TestingConfig(BaseConfig):
     DEBUG = False
     TESTING = True
 
-    SQLALCHEMY_DATABASE_URI = settings.select_db("TestingConfig")
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
+
+

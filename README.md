@@ -4,15 +4,19 @@
 
 # Documentation for Faculty Tools
 
-## Settings
+## Setting up Faculty Tools with Docker & Docker-Compose
 
-Create a new `settings.py` file from the template
+First clone and setup the repo.
 
 ```sh
-cp settings.py.template settings.py
+git clone git@github.com:ucfopen/faculty-tools.git
+cp whitelist.json.template whitelist.json
+cp .env.template .env
+mkdir logs
+touch logs/faculty-tools.log
 ```
 
-Edit `settings.py` to configure the application. All fields are required,
+Edit `.env` to configure the application. All fields are required,
 unless specifically noted.
 
 ## Developer Key
@@ -57,32 +61,13 @@ Add the tools you want instructors and faculty to see to `whitelist.json`.
 ]
 ```
 
-## Virtual Environment
-
-Create a new virtual environment.
-
-```sh
-virtualenv env
-```
-
-Activate the environment.
-
-```sh
-source env/bin/activate
-```
-
-Install everything:
-
-```sh
-pip install -r requirements.txt
-```
-
 ## Create DB
 
-Change directory into the project folder. Create the database in python shell:
+We need to generate the database and tables for faculty tools to run properly.  The MySQL docker image automatically creates the user, password, and database name set in the `docker-compose.yml` file.
 
 ```sh
-from lti import db
+docker-compose run lti python
+from main import db
 db.create_all()
 ```
 
@@ -90,34 +75,35 @@ If you want to look at your users table in the future, you can do so in the
 python shell:
 
 ```python
-from lti import Users
+docker-compose run lti python
+from main import Users
 Users.query.all()
 ```
 
-## Environment Variables
-
-Set the flask app to `lti.py` and debug to true.
-
-```sh
-export FLASK_APP=lti.py
-export FLASK_DEBUG=1
-```
-
-Alternatively, you can run the setup script to simultaneously setup environment
-variables and the virtual environment.
-
-```sh
-source setup.sh
-```
 
 ## Run the App
 
-Run the lti script while your virtual environment is active.
+It's time to use docker-compose to bring up the application.
 
 ```sh
-flask run
+docker-compose up -d
 ```
 
-Go to the /xml page, [http://0.0.0.0:5000/xml](http://0.0.0.0:5000/xml) by default
+Go to the /xml page, [http://127.0.0.1:9001/xml](http://127.0.0.1:9001/xml) by default
 
 Copy the xml, install it into a course.
+
+## View the Logs
+
+To view the logs while the application is running use this docker command:
+
+```sh
+docker-compose logs -f
+```
+
+## Stopping the App
+
+To shutdown Faculty Tools
+```sh
+docker-compose down
+```
