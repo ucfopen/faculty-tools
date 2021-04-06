@@ -24,7 +24,7 @@ jobs:
           # gem install mdl
       - name: Setup Repo
         run: |
-          cp settings.py.template settings.py; cp whitelist.json.template whitelist.json
+          cp whitelist.json.template whitelist.json
           mkdir logs; touch logs/faculty-tools.log
       - name: Run flake8
         run: flake8
