@@ -21,7 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r test_requirements.txt
           pip install coveralls
-          gem install mdl
+          # gem install mdl
       - name: Setup Repo
         run: |
           cp settings.py.template settings.py; cp whitelist.json.template whitelist.json
