@@ -28,3 +28,5 @@ jobs:
           mkdir logs; touch logs/faculty-tools.log
       - name: Run flake8
         run: flake8
+      - name: Run black
+        run: black --check .
