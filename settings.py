@@ -1,4 +1,5 @@
 import os
+
 # Title of the tool. Appears in the <title> element, headers, and configuration XML
 TOOL_TITLE = os.environ.get("TOOL_TITLE", "Faculty Tools")
 
@@ -18,11 +19,7 @@ SHARED_SECRET = os.environ.get("LTI_SECRET")
 
 # Configuration for pylti library. Uses the above key and secret
 PYLTI_CONFIG = {
-    "consumers": {
-        CONSUMER_KEY: {
-            "secret": SHARED_SECRET
-        }
-    },
+    "consumers": {CONSUMER_KEY: {"secret": SHARED_SECRET}},
     # Custom configurable roles
     "roles": {
         "staff": [
@@ -50,6 +47,5 @@ whitelist = "whitelist.json"
 
 # Google Analytics Tracking ID (optional)
 GOOGLE_ANALYTICS = os.environ.get("GOOGLE_ANALYTICS", "GA-")
-
 
 configClass = os.environ.get("CONFIG", "config.DevelopmentConfig")
