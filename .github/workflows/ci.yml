@@ -1,0 +1,30 @@
+name: Run Python Tests
+on:
+  push:
+    branches:
+      - issue/21-dockerize
+  pull_request:
+    branches:
+      - issue/21-dockerize
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Python 3
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r text_requirements.txt
+          pip install coveralls
+          gem install mdl
+      - name: Setup Repo
+        run: |
+          cp settings.py.template settings.py; cp whitelist.json.template whitelist.json
+          mkdir logs; touch logs/faculty-tools.log
+      - name: Run flake8
+        run: flake8
