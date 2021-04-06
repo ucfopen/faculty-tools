@@ -6,7 +6,7 @@ TOOL_TITLE = os.environ.get("TOOL_TITLE", "Faculty Tools")
 THEME_DIR = os.environ.get("THEME_DIR", "")
 
 # Canvas instance URL. ex: https://example.instructure.com/
-BASE_URL = os.environ.get("API_URL")
+BASE_URL = os.environ.get("BASE_CANVAS_SERVER_URL")
 API_URL = BASE_URL + "api/v1/"
 
 # Secret key to sign Flask sessions with. KEEP THIS SECRET!
