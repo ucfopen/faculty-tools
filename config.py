@@ -1,6 +1,7 @@
 import settings
 import os
 
+
 class Config(object):
     # make the warning shut up until Flask-SQLAlchemy v3 comes out
     SQLALCHEMY_TRACK_MODIFICATIONS = True
@@ -14,7 +15,6 @@ class Config(object):
     SESSION_COOKIE_SAMESITE = "None"
 
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
-
 
 
 class BaseConfig(object):
@@ -35,7 +35,6 @@ class BaseConfig(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
 
 
-
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     TESTING = True
@@ -43,12 +42,8 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
 
 
-
-
 class TestingConfig(BaseConfig):
     DEBUG = False
     TESTING = True
 
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URI")
-
-
