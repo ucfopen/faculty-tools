@@ -5,6 +5,8 @@ RUN apt-get -y install ca-certificates
 WORKDIR /app
 COPY requirements.txt /app/
 COPY test_requirements.txt /app/
+COPY devops/nginx.conf /app
+COPY devops/uwsgi.ini /app
 RUN echo $REQUIREMENTS
 RUN pip install -r $REQUIREMENTS
 COPY ./ /app/

@@ -90,9 +90,10 @@ It's time to use docker-compose to bring up the application.
 docker-compose up -d
 ```
 
-Go to the /xml page, [http://127.0.0.1:9001/xml](http://127.0.0.1:9001/xml) by default
+Go to the /xml page, [http://127.0.0.1:9001/xml](http://127.0.0.1:9001/facultytools/xml) 
+by default.
 
-Copy the xml, install it into a course.
+Copy the xml, and install it into a course (Course->Settings->Apps).
 
 ## View the Logs
 
