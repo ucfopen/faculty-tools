@@ -63,7 +63,9 @@ Add the tools you want instructors and faculty to see to `whitelist.json`.
 
 ## Create DB
 
-We need to generate the database and tables for faculty tools to run properly.  The MySQL docker image automatically creates the user, password, and database name set in the `docker-compose.yml` file.
+We need to generate the database and tables for faculty tools to run properly.
+The MySQL docker image automatically creates the user, password, and database
+name set in the `docker-compose.yml` file.
 
 ```sh
 docker-compose run lti python
@@ -79,7 +81,6 @@ docker-compose run lti python
 from main import Users
 Users.query.all()
 ```
-
 
 ## Run the App
 
@@ -104,6 +105,7 @@ docker-compose logs -f
 ## Stopping the App
 
 To shutdown Faculty Tools
+
 ```sh
 docker-compose down
 ```
