@@ -16,6 +16,7 @@ from flask import (
     send_from_directory,
 )
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 import jinja2
 from pylti.flask import lti
 import requests
@@ -286,7 +287,7 @@ def status():
 
     # Check DB connection
     try:
-        db.session.query("1").all()
+        db.session.query(text("1")).all()
         status["checks"]["db"] = True
     except Exception:
         app.logger.exception("DB connection failed.")
