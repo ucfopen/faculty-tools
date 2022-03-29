@@ -1,12 +1,9 @@
-FROM tiangolo/uwsgi-nginx-flask:python3.7
+FROM python:3.7 as base
 ARG REQUIREMENTS
-RUN apt-get update && apt-get -y install libffi-dev gcc python3-dev libffi-dev libssl-dev libxml2-dev libxmlsec1-dev libxmlsec1-openssl
-RUN apt-get -y install ca-certificates
-WORKDIR /app
 COPY requirements.txt /app/
 COPY test_requirements.txt /app/
-COPY devops/nginx.conf /app
-COPY devops/uwsgi.ini /app
-RUN echo $REQUIREMENTS
-RUN pip install -r $REQUIREMENTS
+RUN pip install -r /app/$REQUIREMENTS
+WORKDIR /app
 COPY ./ /app/
+EXPOSE 9001
+CMD ["gunicorn", "--conf", "gunicorn_conf.py", "--bind", "0.0.0.0:9001", "lti:app"]
