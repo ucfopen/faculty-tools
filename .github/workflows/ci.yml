@@ -13,9 +13,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   REQUIREMENTS: requirements.txt
 
-:
-
-
 jobs:
   build:
     runs-on: ubuntu-latest
