@@ -5,13 +5,18 @@
 
 name: Create and publish a Docker image
 
+
+# Only trigger, when the build workflow succeeded
 on:
-  push:
-    branches: ['issue/21-dockerize']
+  workflow_run:
+    workflows: ["Run Python Tests"]
+    types:
+      - completed
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  REQUIREMENTS: requirements.txt
 
 jobs:
   build-and-push-image:
