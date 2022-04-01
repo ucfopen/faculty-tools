@@ -71,7 +71,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
         env:
           REQUIREMENTS: requirements.txt
-        arg:
-          REQUIREMENTS: requirements.txt
+        # arg:
+        #   REQUIREMENTS: requirements.txt
 
 
