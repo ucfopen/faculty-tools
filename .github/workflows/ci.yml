@@ -62,7 +62,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # minimal (short sha)
             type=sha
 
       - name: Build and push Docker image
