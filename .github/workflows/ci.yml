@@ -67,7 +67,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}, ${{ GITHUB_SHA }}
+          tags: ${{ steps.meta.outputs.tags }}, ${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: REQUIREMENTS=${{ env.REQUIREMENTS }}
 
