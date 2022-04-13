@@ -1,7 +1,8 @@
+import logging
 from logging import Formatter, INFO
-from logging.handlers import RotatingFileHandler
 import json
 import os
+import sys
 import time
 
 from canvasapi.exceptions import CanvasException
@@ -45,11 +46,7 @@ theme_dirs = select_theme_dirs()
 app.jinja_loader = jinja2.ChoiceLoader([jinja2.FileSystemLoader(theme_dirs)])
 
 # Logging
-handler = RotatingFileHandler(
-    settings.ERROR_LOG,
-    maxBytes=settings.LOG_MAX_BYTES,
-    backupCount=settings.LOG_BACKUP_COUNT,
-)
+handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(INFO)
 handler.setFormatter(
     Formatter(
@@ -58,6 +55,8 @@ handler.setFormatter(
     )
 )
 app.logger.addHandler(handler)
+
+
 
 
 # DB Model
