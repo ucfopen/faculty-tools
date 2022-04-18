@@ -40,7 +40,6 @@ class LTITests(flask_testing.TestCase):
         app.config["GOOGLE_ANALYTICS"] = "123abc"
         app.config["THEME_DIR"] = "test_theme"
 
-
     def setUp(self):
         with self.app.test_request_context():
             lti.db.create_all()
@@ -1258,12 +1257,6 @@ class UtilsTests(unittest.TestCase):
     app = Flask('test')
     app.config["WHITELIST"] = "whitelist.json"
     app.config["BASE_URL"] = "https://example.edu/"
-    
-    # def create_app(self):
-    #     # app = lti.app
-    #     app.config["WHITELIST"] = "whitelist.json"
-    #     app.config["BASE_URL"] = "https://example.edu/"
-    #     return app
 
     @classmethod
     def setUpClass(cls):
@@ -1271,12 +1264,6 @@ class UtilsTests(unittest.TestCase):
         app.config["BASE_URL"] = "https://example.edu/"
         app.config["WHITELIST"] = "whitelist.json"
         return app
-    
-    # def setUp(self):
-    #     app = lti.app
-    #     app.config["BASE_URL"] = "https://example.edu/"
-    #     app.config["WHITELIST"] = "whitelist.json"
-    #     return app            
 
     def test_filter_tool_list_empty_file(self):
         with self.app.app_context():
