@@ -30,7 +30,6 @@ jobs:
         run: |
           cp whitelist.json.template whitelist.json
           cp .env.template .env
-          mkdir logs; touch logs/faculty-tools.log
       - name: Run flake8
         run: flake8
       - name: Run black
