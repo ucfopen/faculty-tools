@@ -266,7 +266,7 @@ class LTITests(flask_testing.TestCase):
             redirect_url.format(
                 self.app.config["BASE_URL"],
                 self.app.config["OAUTH2_ID"],
-                self.app.config["OAUTH2_URI"]
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -308,7 +308,7 @@ class LTITests(flask_testing.TestCase):
             redirect_url.format(
                 self.app.config["BASE_URL"],
                 self.app.config["OAUTH2_ID"],
-                self.app.config["OAUTH2_URI"]
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -463,7 +463,10 @@ class LTITests(flask_testing.TestCase):
         self.app.config["BASE_URL"] = "https://example.edu/"
 
         m.register_uri(
-            "GET", "http://localhost/", status_code=200, text=self.app.config["TOOL_TITLE"]
+            "GET",
+            "http://localhost/",
+            status_code=200,
+            text=self.app.config["TOOL_TITLE"],
         )
         m.register_uri(
             "GET",
@@ -920,7 +923,7 @@ class LTITests(flask_testing.TestCase):
             redirect_url.format(
                 self.app.config["BASE_URL"],
                 self.app.config["OAUTH2_ID"],
-                self.app.config["OAUTH2_URI"]
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -1004,7 +1007,7 @@ class LTITests(flask_testing.TestCase):
             redirect_url.format(
                 self.app.config["BASE_URL"],
                 self.app.config["OAUTH2_ID"],
-                self.app.config["OAUTH2_URI"]
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -1104,7 +1107,7 @@ class LTITests(flask_testing.TestCase):
             redirect_url.format(
                 self.app.config["BASE_URL"],
                 self.app.config["OAUTH2_ID"],
-                self.app.config["OAUTH2_URI"]
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -1254,7 +1257,7 @@ class LTITests(flask_testing.TestCase):
 
 
 class UtilsTests(unittest.TestCase):
-    app = Flask('test')
+    app = Flask("test")
     app.config["WHITELIST"] = "whitelist.json"
     app.config["BASE_URL"] = "https://example.edu/"
 
