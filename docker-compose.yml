@@ -22,7 +22,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: faculty_tools
-      MYSQL_USER: root
       MYSQL_PASSWORD: secret
     ports:
       - "33061:3306"

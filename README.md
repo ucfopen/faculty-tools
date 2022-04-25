@@ -10,10 +10,9 @@ First clone and setup the repo.
 
 ```sh
 git clone git@github.com:ucfopen/faculty-tools.git
+cd faculty-tools
 cp whitelist.json.template whitelist.json
 cp .env.template .env
-mkdir logs
-touch logs/faculty-tools.log
 ```
 
 Edit `.env` to configure the application. All fields are required,
@@ -69,7 +68,7 @@ name set in the `docker-compose.yml` file.
 
 ```sh
 docker-compose run lti python
-from main import db
+from lti import db
 db.create_all()
 ```
 
@@ -90,7 +89,7 @@ It's time to use docker-compose to bring up the application.
 docker-compose up -d
 ```
 
-Go to the /xml page, <http://127.0.0.1:9001/facultytools/xml> by default.
+Go to the /xml page, <http://127.0.0.1:9001/xml> by default.
 
 Copy the xml, and install it into a course (Course->Settings->Apps).
 
