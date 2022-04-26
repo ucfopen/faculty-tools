@@ -50,7 +50,7 @@ class BaseConfig(object):
 
     # The "Oauth2 Redirect URI" that you provided to Instructure.
     # Set in .env file
-    OAUTH2_URI = os.environ.get("OAUTH2_URI")  # ex. 'https://localhost:9001/oauthlogin'
+    OAUTH2_URI = os.environ.get("OAUTH2_URI")  # ex. 'http://localhost:9001/oauthlogin'
     # The Client_ID Instructure gave you
     OAUTH2_ID = os.environ.get("OAUTH2_ID")
     # The Secret Instructure gave you
