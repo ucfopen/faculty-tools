@@ -15,10 +15,43 @@ cp whitelist.json.template whitelist.json
 cp .env.template .env
 ```
 
+### Environment Variables
+
 Edit `.env` to configure the application. All fields are required,
 unless specifically noted.
 
-## Developer Key
+To create a good secure secret key, run this command:
+
+```sh
+docker-compose run --rm lti python -c "import os, binascii; print(binascii.b2a_base64(os.urandom(24)).decode('ascii'))" 
+```
+
+```sh
+TOOL_TITLE=Faculty Tools # Window Title of Page
+THEME_DIR= # Keep blank unless building out your own theme directory
+BASE_CANVAS_SERVER_URL=https://example.com/ # the URL for your canvas server
+SECRET_KEY=CHANGEME # Random key used to secure portions of Flask - Follow instructions above
+LTI_KEY=key # Random key - This is public - Used to install LTI.
+LTI_SECRET=secret # Random secret key - Used to install LTI.  Do not share!
+OAUTH2_URI=http://127.0.0.1:9001/oauthlogin # URL of faculty tools oauthlogin page
+OAUTH2_ID=CHANGEME # ID given by LMS Admins / Developer Key (API Key) page in Canvas
+OAUTH2_KEY=CHANGEME # ID given by LMS Admins / Developer Key (API Key) page in Canvas
+GOOGLE_ANALYTICS=GA-000000 # Your Google Analytics id.
+DATABASE_URI=mysql://root:secret@db/faculty_tools # Your mysql connection string.
+
+# config.py configuration settings
+# config.Development for Dev, config.BaseConfig for production
+CONFIG=config.DevelopmentConfig
+
+
+# test_requirements for development / requirements.txt for production.
+REQUIREMENTS=test_requirements.txt 
+
+WHITELIST_JSON=whitelist.json # See below
+
+```
+
+## Developer Key -> API Key
 
 You will need a developer key for the OAuth2 flow. Check out the [Canvas
 documentation for creating a new developer key](https://community.canvaslms.com/docs/DOC-12657-4214441833)
@@ -67,7 +100,7 @@ The MySQL docker image automatically creates the user, password, and database
 name set in the `docker-compose.yml` file.
 
 ```sh
-docker-compose run lti python
+docker-compose run --rm lti python
 from lti import db
 db.create_all()
 ```
@@ -77,7 +110,7 @@ python shell:
 
 ```python
 docker-compose run lti python
-from main import Users
+from lti import Users
 Users.query.all()
 ```
 
