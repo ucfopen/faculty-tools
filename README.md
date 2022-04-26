@@ -23,7 +23,7 @@ unless specifically noted.
 To create a good secure secret key, run this command:
 
 ```sh
-docker-compose run --rm lti python -c "import os, binascii; print(binascii.b2a_base64(os.urandom(24)).decode('ascii'))" 
+docker-compose run --rm lti python -c "import os, binascii; print(binascii.b2a_base64(os.urandom(24)).decode('ascii'))"
 ```
 
 ```sh
@@ -45,7 +45,7 @@ CONFIG=config.DevelopmentConfig
 
 
 # test_requirements for development / requirements.txt for production.
-REQUIREMENTS=test_requirements.txt 
+REQUIREMENTS=test_requirements.txt
 
 WHITELIST_JSON=whitelist.json # See below
 
