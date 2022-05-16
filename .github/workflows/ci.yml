@@ -60,17 +60,17 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      # - name: Build and push Docker image
-      #   uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-      #   with:
-      #     context: .
-      #     push: true
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
-      #     build-args: REQUIREMENTS=${{ env.REQUIREMENTS }}
-      #     platforms: linux/amd64
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: REQUIREMENTS=${{ env.REQUIREMENTS }}
+          platforms: linux/amd64
 
-      - name: Build and push ARM Docker image
+      - name: Build and push ARM64 Docker image
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -78,5 +78,15 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: REQUIREMENTS=${{ env.REQUIREMENTS }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7 
+          platforms: linux/arm64 
+
+      - name: Build and push ARMv7 Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: REQUIREMENTS=${{ env.REQUIREMENTS }}
+          platforms: linux/arm/v7
 
