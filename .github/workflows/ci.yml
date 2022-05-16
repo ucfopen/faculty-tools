@@ -40,9 +40,9 @@ jobs:
       #   uses: falti/dotenv-action@v0.2.5
       - name: Environment Variables from Dotenv
         uses: c-py/action-dotenv-to-setenv@v3
-      - name: Print Repo
-        run: |
-          env
+      # - name: Print Repo
+      #   run: |
+      #     env
       - name: Run unittests
         run: coverage run -m unittest discover
 
@@ -59,6 +59,10 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Print Buildx
+        run: |
+          docker buildx ls
 
       - name: Build and push Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
