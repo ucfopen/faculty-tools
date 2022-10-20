@@ -2,8 +2,9 @@ import json
 import re
 from collections import defaultdict
 
-import settings
 from canvasapi import Canvas
+
+import settings
 
 
 def get_tool_info(whitelist, tool_name):

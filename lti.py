@@ -6,7 +6,6 @@ from logging.handlers import RotatingFileHandler
 
 import jinja2
 import requests
-import settings
 from canvasapi.exceptions import CanvasException
 from flask import (
     Flask,
@@ -22,6 +21,7 @@ from flask_sqlalchemy import SQLAlchemy
 from pylti.flask import lti
 from requests.exceptions import HTTPError
 
+import settings
 from utils import filter_tool_list, slugify
 
 app = Flask(__name__)

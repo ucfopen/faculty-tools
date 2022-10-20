@@ -9,12 +9,12 @@ import flask
 import flask_testing
 import oauthlib.oauth1
 import requests_mock
-import settings
 from flask import url_for
 from mock import mock_open, patch
 from pylti.common import LTI_SESSION_KEY
 
 import lti
+import settings
 import utils
 
 
