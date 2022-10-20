@@ -17,11 +17,7 @@ SHARED_SECRET = "secret"
 
 # Configuration for pylti library. Uses the above key and secret
 PYLTI_CONFIG = {
-    "consumers": {
-        CONSUMER_KEY: {
-            "secret": SHARED_SECRET
-        }
-    },
+    "consumers": {CONSUMER_KEY: {"secret": SHARED_SECRET}},
     # Custom configurable roles
     "roles": {
         "staff": [
