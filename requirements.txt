@@ -1,6 +1,6 @@
-canvasapi==0.15.0
-Flask==1.1.1
-Flask-SQLAlchemy==2.4.1
+canvasapi==3.0.0
+Flask==2.2.2
+Flask-SQLAlchemy==3.0.2
 mysqlclient
 git+https://github.com/ucfcdl/pylti.git@roles#egg=PyLTI
 requests==2.22.0
