@@ -1,28 +1,28 @@
-from logging import Formatter, INFO
-from logging.handlers import RotatingFileHandler
 import json
 import os
 import time
+from logging import INFO, Formatter
+from logging.handlers import RotatingFileHandler
 
+import jinja2
+import requests
+import settings
 from canvasapi.exceptions import CanvasException
 from flask import (
     Flask,
-    render_template,
-    session,
-    request,
-    redirect,
-    url_for,
     Response,
+    redirect,
+    render_template,
+    request,
     send_from_directory,
+    session,
+    url_for,
 )
 from flask_sqlalchemy import SQLAlchemy
-import jinja2
 from pylti.flask import lti
-import requests
 from requests.exceptions import HTTPError
 
 from utils import filter_tool_list, slugify
-import settings
 
 app = Flask(__name__)
 app.config.from_object(settings.configClass)

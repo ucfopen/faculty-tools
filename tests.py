@@ -1,20 +1,20 @@
-from json.decoder import JSONDecodeError
 import logging
+import time
 import unittest
+from json.decoder import JSONDecodeError
 from urllib.parse import urlencode
 
 import canvasapi
-import oauthlib.oauth1
 import flask
-from flask import url_for
 import flask_testing
+import oauthlib.oauth1
 import requests_mock
-from pylti.common import LTI_SESSION_KEY
-import time
-
-from mock import patch, mock_open
-import lti
 import settings
+from flask import url_for
+from mock import mock_open, patch
+from pylti.common import LTI_SESSION_KEY
+
+import lti
 import utils
 
 

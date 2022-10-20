@@ -1,10 +1,9 @@
-from collections import defaultdict
 import json
 import re
-
-from canvasapi import Canvas
+from collections import defaultdict
 
 import settings
+from canvasapi import Canvas
 
 
 def get_tool_info(whitelist, tool_name):
