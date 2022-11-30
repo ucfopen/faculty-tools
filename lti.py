@@ -1,7 +1,8 @@
+import logging
 from logging import Formatter, INFO
-from logging.handlers import RotatingFileHandler
 import json
 import os
+import sys
 import time
 
 from canvasapi.exceptions import CanvasException
@@ -16,17 +17,18 @@ from flask import (
     send_from_directory,
 )
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 import jinja2
 from pylti.flask import lti
 import requests
 from requests.exceptions import HTTPError
 
 from utils import filter_tool_list, slugify
-import settings
 
 app = Flask(__name__)
-app.config.from_object(settings.configClass)
-app.secret_key = settings.secret_key
+app.config.from_object(os.environ.get("CONFIG", "config.DevelopmentConfig"))
+app.secret_key = app.config["SECRET_KEY"]
+
 db = SQLAlchemy(app)
 
 
@@ -34,8 +36,8 @@ def select_theme_dirs():
     """
     Load theme templates, if applicable
     """
-    if settings.THEME_DIR:
-        return ["themes/" + settings.THEME_DIR + "/templates", "templates"]
+    if app.config["THEME_DIR"]:
+        return ["themes/" + app.config["THEME_DIR"] + "/templates", "templates"]
     else:
         return ["templates"]
 
@@ -44,11 +46,7 @@ theme_dirs = select_theme_dirs()
 app.jinja_loader = jinja2.ChoiceLoader([jinja2.FileSystemLoader(theme_dirs)])
 
 # Logging
-handler = RotatingFileHandler(
-    settings.ERROR_LOG,
-    maxBytes=settings.LOG_MAX_BYTES,
-    backupCount=settings.LOG_BACKUP_COUNT,
-)
+handler = logging.StreamHandler(sys.stdout)
 handler.setLevel(INFO)
 handler.setFormatter(
     Formatter(
@@ -79,7 +77,7 @@ class Users(db.Model):
 @app.context_processor
 def ga_utility_processor():
     def google_analytics():
-        return settings.GOOGLE_ANALYTICS
+        return app.config["GOOGLE_ANALYTICS"]
 
     return dict(google_analytics=google_analytics())
 
@@ -87,7 +85,7 @@ def ga_utility_processor():
 @app.context_processor
 def title_utility_processor():
     def title():
-        return settings.TOOL_TITLE
+        return app.config["TOOL_TITLE"]
 
     return dict(title=title())
 
@@ -95,13 +93,13 @@ def title_utility_processor():
 @app.context_processor
 def theme_static_files_processor():
     def theme_static_files(folder):
-        if not settings.THEME_DIR:
+        if not app.config["THEME_DIR"]:
             return list()
 
         try:
             all_files = os.listdir(
                 "themes/{theme_dir}/static/{folder}".format(
-                    theme_dir=settings.THEME_DIR, folder=folder
+                    theme_dir=app.config["THEME_DIR"], folder=folder
                 )
             )
 
@@ -144,7 +142,7 @@ def error(exception=None):
 
 @app.route("/themes/static/<path:filename>")
 def theme_static(filename):  # pragma: nocover
-    static_dir = "themes/{theme_dir}/static".format(theme_dir=settings.THEME_DIR)
+    static_dir = "themes/{theme_dir}/static".format(theme_dir=app.config["THEME_DIR"])
     return send_from_directory(static_dir, filename)
 
 
@@ -167,7 +165,7 @@ def index(lti=lti):
 
     # Test API key to see if they need to reauthenticate
     auth_header = {"Authorization": "Bearer " + session["api_key"]}
-    r = requests.get(settings.API_URL + "users/self", headers=auth_header)
+    r = requests.get(app.config["API_URL"] + "users/self", headers=auth_header)
     if "WWW-Authenticate" in r.headers:
         # reroll oauth
         app.logger.info(
@@ -178,11 +176,11 @@ def index(lti=lti):
         )
 
         return redirect(
-            settings.BASE_URL
+            app.config["BASE_URL"]
             + "login/oauth2/auth?client_id="
-            + settings.oauth2_id
+            + app.config["OAUTH2_ID"]
             + "&response_type=code&redirect_uri="
-            + settings.oauth2_uri
+            + app.config["OAUTH2_URI"]
         )
 
     if "WWW-Authenticate" not in r.headers and r.status_code == 401:
@@ -210,15 +208,15 @@ def index(lti=lti):
             )
         )
         return redirect(
-            settings.BASE_URL
+            app.config["BASE_URL"]
             + "login/oauth2/auth?client_id="
-            + settings.oauth2_id
+            + app.config["OAUTH2_ID"]
             + "&response_type=code&redirect_uri="
-            + settings.oauth2_uri
+            + app.config["OAUTH2_URI"]
         )
 
     r = requests.get(
-        settings.API_URL
+        app.config["API_URL"]
         + "courses/{0}/external_tools?include_parents=true&per_page=100".format(
             session["course_id"]
         ),
@@ -261,7 +259,7 @@ def status():
         "checks": {"index": False, "xml": False, "db": False, "dev_key": False},
         "url": url_for("index", _external=True),
         "xml_url": url_for("xml", _external=True),
-        "base_url": settings.BASE_URL,
+        "base_url": app.config["BASE_URL"],
         "debug": app.debug,
     }
 
@@ -269,7 +267,7 @@ def status():
     try:
         response = requests.get(url_for("index", _external=True), verify=False)
         index_check = (
-            response.status_code == 200 and settings.TOOL_TITLE in response.text
+            response.status_code == 200 and app.config["TOOL_TITLE"] in response.text
         )
         status["checks"]["index"] = index_check
     except Exception:
@@ -286,7 +284,7 @@ def status():
 
     # Check DB connection
     try:
-        db.session.query("1").all()
+        db.session.query(text("1")).all()
         status["checks"]["db"] = True
     except Exception:
         app.logger.exception("DB connection failed.")
@@ -295,7 +293,9 @@ def status():
     try:
         response = requests.get(
             "{}login/oauth2/auth?client_id={}&response_type=code&redirect_uri={}".format(
-                settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
+                app.config["BASE_URL"],
+                app.config["OAUTH2_ID"],
+                app.config["OAUTH2_URI"],
             )
         )
         status["checks"]["dev_key"] = response.status_code == 200
@@ -337,12 +337,12 @@ def oauth_login(lti=lti):
 
     payload = {
         "grant_type": "authorization_code",
-        "client_id": settings.oauth2_id,
-        "redirect_uri": settings.oauth2_uri,
-        "client_secret": settings.oauth2_key,
+        "client_id": app.config["OAUTH2_ID"],
+        "redirect_uri": app.config["OAUTH2_URI"],
+        "client_secret": app.config["OAUTH2_KEY"],
         "code": code,
     }
-    r = requests.post(settings.BASE_URL + "login/oauth2/token", data=payload)
+    r = requests.post(app.config["BASE_URL"] + "login/oauth2/token", data=payload)
 
     try:
         r.raise_for_status()
@@ -442,12 +442,14 @@ def refresh_access_token(user):
 
     payload = {
         "grant_type": "refresh_token",
-        "client_id": settings.oauth2_id,
-        "redirect_uri": settings.oauth2_uri,
-        "client_secret": settings.oauth2_key,
+        "client_id": app.config["OAUTH2_ID"],
+        "redirect_uri": app.config["OAUTH2_URI"],
+        "client_secret": app.config["OAUTH2_KEY"],
         "refresh_token": refresh_token,
     }
-    response = requests.post(settings.BASE_URL + "login/oauth2/token", data=payload)
+    response = requests.post(
+        app.config["BASE_URL"] + "login/oauth2/token", data=payload
+    )
 
     try:
         response.raise_for_status()
@@ -535,11 +537,11 @@ def auth(lti=lti):
             )
         )
         return redirect(
-            settings.BASE_URL
+            app.config["BASE_URL"]
             + "login/oauth2/auth?client_id="
-            + settings.oauth2_id
+            + app.config["OAUTH2_ID"]
             + "&response_type=code&redirect_uri="
-            + settings.oauth2_uri
+            + app.config["OAUTH2_URI"]
         )
 
     # Get the expiration date
@@ -567,17 +569,17 @@ def auth(lti=lti):
             # Refresh didn't work. Reauthenticate.
             app.logger.info("Reauthenticating:\nSession: {}".format(session))
             return redirect(
-                settings.BASE_URL
+                app.config["BASE_URL"]
                 + "login/oauth2/auth?client_id="
-                + settings.oauth2_id
+                + app.config["OAUTH2_ID"]
                 + "&response_type=code&redirect_uri="
-                + settings.oauth2_uri
+                + app.config["OAUTH2_URI"]
             )
     else:
         # API key that shouldn't be expired. Test it.
         auth_header = {"Authorization": "Bearer " + session["api_key"]}
         r = requests.get(
-            settings.API_URL + "users/%s/profile" % (session["canvas_user_id"]),
+            app.config["API_URL"] + "users/%s/profile" % (session["canvas_user_id"]),
             headers=auth_header,
         )
         # check for WWW-Authenticate
@@ -595,11 +597,11 @@ def auth(lti=lti):
                 # Refresh didn't work. Reauthenticate.
                 app.logger.info("Reauthenticating\nSession: {}".format(session))
                 return redirect(
-                    settings.BASE_URL
+                    app.config["BASE_URL"]
                     + "login/oauth2/auth?client_id="
-                    + settings.oauth2_id
+                    + app.config["OAUTH2_ID"]
                     + "&response_type=code&redirect_uri="
-                    + settings.oauth2_uri
+                    + app.config["OAUTH2_URI"]
                 )
 
 
@@ -616,7 +618,7 @@ def get_sessionless_url(lti_id, is_course_nav, lti=lti):
             "&launch_type=course_navigation"
         )
         r = requests.get(
-            url.format(settings.API_URL, session["course_id"], lti_id),
+            url.format(app.config["API_URL"], session["course_id"], lti_id),
             headers=auth_header,
         )
         if r.status_code >= 400:
@@ -640,7 +642,7 @@ def get_sessionless_url(lti_id, is_course_nav, lti=lti):
         auth_header = {"Authorization": "Bearer " + session["api_key"]}
         # get sessionless launch url
         r = requests.get(
-            settings.API_URL
+            app.config["API_URL"]
             + "courses/{0}/external_tools/sessionless_launch?id={1}".format(
                 session["course_id"], lti_id
             ),

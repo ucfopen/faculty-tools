@@ -1,7 +1,11 @@
-canvasapi==0.15.0
-Flask==1.1.1
-Flask-SQLAlchemy==2.4.1
-mysqlclient
+Flask==2.0.1
 -e git+https://github.com/ucfcdl/pylti.git@roles#egg=PyLTI
-requests==2.22.0
-Werkzeug>=1.0.1  # Chrome 80 SameSite fix
+requests==2.27.1
+gunicorn==20.1.0
+mysqlclient==2.1.0
+Flask-SQLAlchemy==2.5.1
+canvasapi==2.2.0
+Werkzeug==2.0.2
+itsdangerous==2.0.1
+Jinja2==3.0.2
+MarkupSafe==2.0.1

@@ -4,18 +4,54 @@
 
 # Documentation for Faculty Tools
 
-## Settings
+## Setting up Faculty Tools with Docker & Docker-Compose
 
-Create a new `settings.py` file from the template
+First clone and setup the repo.
 
 ```sh
-cp settings.py.template settings.py
+git clone git@github.com:ucfopen/faculty-tools.git
+cd faculty-tools
+cp whitelist.json.template whitelist.json
+cp .env.template .env
 ```
 
-Edit `settings.py` to configure the application. All fields are required,
+### Environment Variables
+
+Edit `.env` to configure the application. All fields are required,
 unless specifically noted.
 
-## Developer Key
+To create a good secure secret key, run this command:
+
+```sh
+docker-compose run --rm lti python -c "import os, binascii; print(binascii.b2a_base64(os.urandom(24)).decode('ascii'))"
+```
+
+```sh
+TOOL_TITLE=Faculty Tools # Window Title of Page
+THEME_DIR= # Keep blank unless building out your own theme directory
+BASE_CANVAS_SERVER_URL=https://example.com/ # the URL for your canvas server
+SECRET_KEY=CHANGEME # Random key used to secure portions of Flask - Follow instructions above
+LTI_KEY=key # Random key - This is public - Used to install LTI.
+LTI_SECRET=secret # Random secret key - Used to install LTI.  Do not share!
+OAUTH2_URI=http://127.0.0.1:9001/oauthlogin # URL of faculty tools oauthlogin page
+OAUTH2_ID=CHANGEME # ID given by LMS Admins / Developer Key (API Key) page in Canvas
+OAUTH2_KEY=CHANGEME # ID given by LMS Admins / Developer Key (API Key) page in Canvas
+GOOGLE_ANALYTICS=GA-000000 # Your Google Analytics id.
+DATABASE_URI=mysql://root:secret@db/faculty_tools # Your mysql connection string.
+
+# config.py configuration settings
+# config.Development for Dev, config.BaseConfig for production
+CONFIG=config.DevelopmentConfig
+
+
+# test_requirements for development / requirements.txt for production.
+REQUIREMENTS=test_requirements.txt
+
+WHITELIST_JSON=whitelist.json # See below
+
+```
+
+## Developer Key -> API Key
 
 You will need a developer key for the OAuth2 flow. Check out the [Canvas
 documentation for creating a new developer key](https://community.canvaslms.com/docs/DOC-12657-4214441833)
@@ -57,31 +93,14 @@ Add the tools you want instructors and faculty to see to `whitelist.json`.
 ]
 ```
 
-## Virtual Environment
-
-Create a new virtual environment.
-
-```sh
-virtualenv env
-```
-
-Activate the environment.
-
-```sh
-source env/bin/activate
-```
-
-Install everything:
-
-```sh
-pip install -r requirements.txt
-```
-
 ## Create DB
 
-Change directory into the project folder. Create the database in python shell:
+We need to generate the database and tables for faculty tools to run properly.
+The MySQL docker image automatically creates the user, password, and database
+name set in the `docker-compose.yml` file.
 
 ```sh
+docker-compose run --rm lti python
 from lti import db
 db.create_all()
 ```
@@ -90,34 +109,35 @@ If you want to look at your users table in the future, you can do so in the
 python shell:
 
 ```python
+docker-compose run lti python
 from lti import Users
 Users.query.all()
 ```
 
-## Environment Variables
-
-Set the flask app to `lti.py` and debug to true.
-
-```sh
-export FLASK_APP=lti.py
-export FLASK_DEBUG=1
-```
-
-Alternatively, you can run the setup script to simultaneously setup environment
-variables and the virtual environment.
-
-```sh
-source setup.sh
-```
-
 ## Run the App
 
-Run the lti script while your virtual environment is active.
+It's time to use docker-compose to bring up the application.
 
 ```sh
-flask run
+docker-compose up -d
 ```
 
-Go to the /xml page, [http://0.0.0.0:5000/xml](http://0.0.0.0:5000/xml) by default
+Go to the /xml page, <http://127.0.0.1:9001/xml> by default.
 
-Copy the xml, install it into a course.
+Copy the xml, and install it into a course (Course->Settings->Apps).
+
+## View the Logs
+
+To view the logs while the application is running use this docker command:
+
+```sh
+docker-compose logs -f
+```
+
+## Stopping the App
+
+To shutdown Faculty Tools
+
+```sh
+docker-compose down
+```

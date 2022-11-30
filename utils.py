@@ -4,7 +4,7 @@ import re
 
 from canvasapi import Canvas
 
-import settings
+from flask import current_app
 
 
 def get_tool_info(whitelist, tool_name):
@@ -37,13 +37,13 @@ def filter_tool_list(course_id, access_token):
         The values are a list of all installed external tools that are
         in that category and on the whitelist.
     """
-    with open(settings.whitelist, "r") as wl_file:
+    with open(current_app.config["WHITELIST"], "r") as wl_file:
         whitelist = json.loads(wl_file.read())
 
     if not whitelist:
         raise ValueError("whitelist.json is empty")
 
-    canvas = Canvas(settings.BASE_URL, access_token)
+    canvas = Canvas(current_app.config["BASE_URL"], access_token)
 
     course = canvas.get_course(course_id)
     installed_tools = course.get_external_tools(include_parents=True)

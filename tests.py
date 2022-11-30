@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 import canvasapi
 import oauthlib.oauth1
 import flask
-from flask import url_for
+from flask import Flask, url_for
 import flask_testing
 import requests_mock
 from pylti.common import LTI_SESSION_KEY
@@ -14,7 +14,6 @@ import time
 
 from mock import patch, mock_open
 import lti
-import settings
 import utils
 
 
@@ -34,11 +33,12 @@ class LTITests(flask_testing.TestCase):
     @classmethod
     def setUpClass(cls):
         logging.disable(logging.CRITICAL)
-        settings.BASE_URL = "https://example.edu/"
-        settings.oauth2_id = "10000000000001"
-        settings.oauth2_uri = "oauthlogin"
-        settings.GOOGLE_ANALYTICS = "123abc"
-        settings.THEME_DIR = "test_theme"
+        app = lti.app
+        app.config["BASE_URL"] = "https://example.edu/"
+        app.config["OAUTH2_ID"] = "10000000000001"
+        app.config["OAUTH2_URI"] = "oauthlogin"
+        app.config["GOOGLE_ANALYTICS"] = "123abc"
+        app.config["THEME_DIR"] = "test_theme"
 
     def setUp(self):
         with self.app.test_request_context():
@@ -94,8 +94,10 @@ class LTITests(flask_testing.TestCase):
         self.assertEqual(theme_dirs[0], "themes/test_theme/templates")
         self.assertEqual(theme_dirs[1], "templates")
 
-    @patch("settings.THEME_DIR", "")
+    # @patch('self.app.config["BASE_URL"]', "")
     def test_select_theme_dirs_no_theme(self, m):
+        self.app.config["BASE_URL"] = ""
+        self.app.config["THEME_DIR"] = ""
         theme_dirs = lti.select_theme_dirs()
 
         self.assertIsInstance(theme_dirs, list)
@@ -115,6 +117,7 @@ class LTITests(flask_testing.TestCase):
 
     @patch("os.listdir")
     def test_theme_static_files_processor(self, m, mocked_listdir):
+        self.app.config["THEME_DIR"] = "test_theme"
         mocked_listdir.return_value = ["file1.css", "file2.js"]
         files = lti.theme_static_files_processor()
 
@@ -144,8 +147,9 @@ class LTITests(flask_testing.TestCase):
         self.assertIsInstance(files["theme_static_js"], list)
         self.assertEqual(len(files["theme_static_js"]), 0)
 
-    @patch("settings.THEME_DIR", "")
-    def test_heme_static_files_processor_no_theme(self, m):
+    # @patch('app.config["THEME_DIR"]', "")
+    def test_theme_static_files_processor_no_theme(self, m):
+        self.app.config["THEME_DIR"] = ""
         files = lti.theme_static_files_processor()
 
         self.assertIsInstance(files, dict)
@@ -181,7 +185,7 @@ class LTITests(flask_testing.TestCase):
 
         self.assertIsInstance(ga, dict)
         self.assertIn("google_analytics", ga)
-        self.assertEqual(ga["google_analytics"], settings.GOOGLE_ANALYTICS)
+        self.assertEqual(ga["google_analytics"], self.app.config["GOOGLE_ANALYTICS"])
 
     # title_utility_processor
     def test_title_utility_processor(self, m):
@@ -189,7 +193,7 @@ class LTITests(flask_testing.TestCase):
 
         self.assertIsInstance(title, dict)
         self.assertIn("title", title)
-        self.assertEqual(title["title"], settings.TOOL_TITLE)
+        self.assertEqual(title["title"], self.app.config["TOOL_TITLE"])
 
     # return_error
     def test_return_error(self, m):
@@ -260,7 +264,9 @@ class LTITests(flask_testing.TestCase):
         self.assert_redirects(
             response,
             redirect_url.format(
-                settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
+                self.app.config["BASE_URL"],
+                self.app.config["OAUTH2_ID"],
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -300,7 +306,9 @@ class LTITests(flask_testing.TestCase):
         self.assert_redirects(
             response,
             redirect_url.format(
-                settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
+                self.app.config["BASE_URL"],
+                self.app.config["OAUTH2_ID"],
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -349,7 +357,7 @@ class LTITests(flask_testing.TestCase):
             ],
             headers={
                 "Link": '<{}api/v1/courses/1/external_tools?page=2>; rel="next"'.format(
-                    settings.BASE_URL
+                    self.app.config["BASE_URL"]
                 )
             },
             status_code=200,
@@ -394,7 +402,7 @@ class LTITests(flask_testing.TestCase):
             ],
             headers={
                 "Link": '<{}api/v1/courses/1/external_tools?page=2>; rel="next"'.format(
-                    settings.BASE_URL
+                    self.app.config["BASE_URL"]
                 )
             },
             status_code=200,
@@ -432,7 +440,7 @@ class LTITests(flask_testing.TestCase):
             ],
             headers={
                 "Link": '<{}api/v1/courses/1/external_tools?page=2>; rel="next"'.format(
-                    settings.BASE_URL
+                    self.app.config["BASE_URL"]
                 )
             },
             status_code=200,
@@ -452,8 +460,13 @@ class LTITests(flask_testing.TestCase):
 
     # status
     def test_status_healthy(self, m):
+        self.app.config["BASE_URL"] = "https://example.edu/"
+
         m.register_uri(
-            "GET", "http://localhost/", status_code=200, text=settings.TOOL_TITLE
+            "GET",
+            "http://localhost/",
+            status_code=200,
+            text=self.app.config["TOOL_TITLE"],
         )
         m.register_uri(
             "GET",
@@ -908,7 +921,9 @@ class LTITests(flask_testing.TestCase):
         self.assert_redirects(
             response,
             redirect_url.format(
-                settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
+                self.app.config["BASE_URL"],
+                self.app.config["OAUTH2_ID"],
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -990,7 +1005,9 @@ class LTITests(flask_testing.TestCase):
         self.assert_redirects(
             response,
             redirect_url.format(
-                settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
+                self.app.config["BASE_URL"],
+                self.app.config["OAUTH2_ID"],
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -1088,7 +1105,9 @@ class LTITests(flask_testing.TestCase):
         self.assert_redirects(
             response,
             redirect_url.format(
-                settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
+                self.app.config["BASE_URL"],
+                self.app.config["OAUTH2_ID"],
+                self.app.config["OAUTH2_URI"],
             ),
         )
 
@@ -1238,20 +1257,28 @@ class LTITests(flask_testing.TestCase):
 
 
 class UtilsTests(unittest.TestCase):
+    app = Flask("test")
+    app.config["WHITELIST"] = "whitelist.json"
+    app.config["BASE_URL"] = "https://example.edu/"
+
     @classmethod
     def setUpClass(cls):
-        settings.BASE_URL = "https://example.edu/"
-        settings.whitelist = "whitelist.json"
+        app = lti.app
+        app.config["BASE_URL"] = "https://example.edu/"
+        app.config["WHITELIST"] = "whitelist.json"
+        return app
 
     def test_filter_tool_list_empty_file(self):
-        with self.assertRaises(JSONDecodeError):
-            with patch("builtins.open", mock_open(read_data="")):
-                utils.filter_tool_list(1, "password")
+        with self.app.app_context():
+            with self.assertRaises(JSONDecodeError):
+                with patch("builtins.open", mock_open(read_data="")):
+                    utils.filter_tool_list(1, "password")
 
     def test_filter_tool_list_empty_data(self):
-        with self.assertRaisesRegex(ValueError, r"whitelist\.json is empty"):
-            with patch("builtins.open", mock_open(read_data="{}")):
-                utils.filter_tool_list(1, "password")
+        with self.app.app_context():
+            with self.assertRaisesRegex(ValueError, r"whitelist\.json is empty"):
+                with patch("builtins.open", mock_open(read_data="{}")):
+                    utils.filter_tool_list(1, "password")
 
     @patch("canvasapi.canvas.Canvas.get_course")
     @patch("canvasapi.course.Course.get_external_tools")
