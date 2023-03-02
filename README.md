@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/ucfopen/faculty-tools.svg?branch=master)](https://travis-ci.org/ucfopen/faculty-tools)
 [![Coverage Status](https://coveralls.io/repos/github/ucfopen/faculty-tools/badge.svg?branch=master)](https://coveralls.io/github/ucfopen/faculty-tools?branch=master)
-[![Join UCF Open Slack Discussions](https://ucf-open-slackin.herokuapp.com/badge.svg)](https://ucf-open-slackin.herokuapp.com/)
+[![Join UCF Open Slack Discussions](https://badgen.net/badge/icon/ucfopen?icon=slack&label=slack&color=pink)](https://dl.ucf.edu/join-ucfopen)
 
 # Documentation for Faculty Tools
 
