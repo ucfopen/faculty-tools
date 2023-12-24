@@ -1,18 +1,18 @@
-from json.decoder import JSONDecodeError
 import logging
+import time
 import unittest
+from json.decoder import JSONDecodeError
 from urllib.parse import urlencode
 
 import canvasapi
-import oauthlib.oauth1
 import flask
-from flask import url_for
 import flask_testing
+import oauthlib.oauth1
 import requests_mock
+from flask import url_for
+from mock import mock_open, patch
 from pylti.common import LTI_SESSION_KEY
-import time
 
-from mock import patch, mock_open
 import lti
 import settings
 import utils
@@ -85,6 +85,18 @@ class LTITests(flask_testing.TestCase):
         signed_url = signature[0]
         new_url = signed_url[len(base_url) :]
         return new_url
+
+    def assert_redirects_new(self, response, location, message=None):
+        valid_status_codes = (301, 302, 303, 305, 307)
+        valid_status_code_str = ", ".join(str(code) for code in valid_status_codes)
+        not_redirect = "HTTP Status %s expected but got %d" % (
+            valid_status_code_str,
+            response.status_code,
+        )
+        self.assertTrue(
+            response.status_code in valid_status_codes, message or not_redirect
+        )
+        self.assertEqual(response.location, location, message)
 
     def test_select_theme_dirs(self, m):
         theme_dirs = lti.select_theme_dirs()
@@ -257,7 +269,7 @@ class LTITests(flask_testing.TestCase):
         redirect_url = (
             "{}login/oauth2/auth?client_id={}&response_type=code&redirect_uri={}"
         )
-        self.assert_redirects(
+        self.assert_redirects_new(
             response,
             redirect_url.format(
                 settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
@@ -297,7 +309,7 @@ class LTITests(flask_testing.TestCase):
         redirect_url = (
             "{}login/oauth2/auth?client_id={}&response_type=code&redirect_uri={}"
         )
-        self.assert_redirects(
+        self.assert_redirects_new(
             response,
             redirect_url.format(
                 settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
@@ -592,7 +604,7 @@ class LTITests(flask_testing.TestCase):
                 )
             )
 
-            self.assert_redirects(response, url_for("index"))
+            self.assert_redirects_new(response, url_for("index"))
 
             # Check that user is created
             user = lti.Users.query.filter_by(
@@ -701,7 +713,7 @@ class LTITests(flask_testing.TestCase):
                 )
             )
 
-            self.assert_redirects(response, url_for("index"))
+            self.assert_redirects_new(response, url_for("index"))
             self.assertGreater(user.expires_in, old_expire)
 
     def test_oauth_login_existing_user_db_error(self, m):
@@ -905,7 +917,7 @@ class LTITests(flask_testing.TestCase):
         redirect_url = (
             "{}login/oauth2/auth?client_id={}&response_type=code&redirect_uri={}"
         )
-        self.assert_redirects(
+        self.assert_redirects_new(
             response,
             redirect_url.format(
                 settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
@@ -950,7 +962,7 @@ class LTITests(flask_testing.TestCase):
             self.assertEqual(flask.session["api_key"], new_access_token)
             self.assertEqual(flask.session["expires_in"], new_expiry_date)
 
-            self.assert_redirects(response, url_for("index"))
+            self.assert_redirects_new(response, url_for("index"))
 
     @patch("lti.refresh_access_token")
     def test_auth_no_api_key_refresh_fail(self, m, mock_refresh_access_token):
@@ -987,7 +999,7 @@ class LTITests(flask_testing.TestCase):
         redirect_url = (
             "{}login/oauth2/auth?client_id={}&response_type=code&redirect_uri={}"
         )
-        self.assert_redirects(
+        self.assert_redirects_new(
             response,
             redirect_url.format(
                 settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
@@ -1038,7 +1050,7 @@ class LTITests(flask_testing.TestCase):
             data=payload,
         )
 
-        self.assertRedirects(response, url_for("index"))
+        self.assert_redirects_new(response, url_for("index"))
 
     @patch("lti.refresh_access_token")
     def test_auth_invalid_api_key_refresh_fail(self, m, mock_refresh_access_token):
@@ -1085,7 +1097,7 @@ class LTITests(flask_testing.TestCase):
         redirect_url = (
             "{}login/oauth2/auth?client_id={}&response_type=code&redirect_uri={}"
         )
-        self.assert_redirects(
+        self.assert_redirects_new(
             response,
             redirect_url.format(
                 settings.BASE_URL, settings.oauth2_id, settings.oauth2_uri
@@ -1123,7 +1135,7 @@ class LTITests(flask_testing.TestCase):
             data=payload,
         )
 
-        self.assert_redirects(response, url_for("index"))
+        self.assert_redirects_new(response, url_for("index"))
 
     # get_sessionless_url
     def test_get_sessionless_url_is_course_nav_fail(self, m):

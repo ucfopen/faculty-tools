@@ -1,6 +1,6 @@
-from collections import defaultdict
 import json
 import re
+from collections import defaultdict
 
 from canvasapi import Canvas
 

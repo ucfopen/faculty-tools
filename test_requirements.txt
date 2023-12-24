@@ -5,6 +5,7 @@ blinker
 coverage
 flake8
 Flask-Testing>=0.8.0
+isort
 mock
 oauthlib
 requests-mock
